@@ -138,31 +138,46 @@ class Blueprint {
 		return $columnsSql;
 	}
 
+	private function tableExists( $tableName ) {
+		global $wpdb;
+
+		$exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $tableName ) );
+
+		return $exists !== null;
+	}
+
+	private function columnExists( $tableName, $columnName ) {
+		global $wpdb;
+
+		$exists = $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM `{$tableName}` LIKE %s", $columnName ) );
+
+		return $exists !== null;
+	}
+
 	public function run() {
 		global $wpdb;
 		if ( $this->command === 'create' ) {
 			$columnsSql = $this->prepareColumns();
 
 			$tableName = $wpdb->prefix . $this->table;
+
+			if ( $this->tableExists( $tableName ) ) {
+				return;
+			}
+
 			$columnsDef = implode( ",\n  ", $columnsSql );
 
 			$sql = "CREATE TABLE `$tableName` (\n  $columnsDef\n) {$wpdb->get_charset_collate()};";
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-			dbDelta( $sql );
+
+			$wpdb->query( $sql );
 		} else {
 			$tableName = $wpdb->prefix . $this->table;
 
 			foreach ( $this->columns as $column ) {
 				$columnName = $column->getName();
 
-				$exists = $wpdb->get_var(
-					$wpdb->prepare(
-						"SHOW COLUMNS FROM `$tableName` LIKE %s",
-						$columnName
-					)
-				);
-
-				if ( ! $exists ) {
+				if ( ! $this->columnExists( $tableName, $columnName ) ) {
 					$columnSql = $this->generateSingleColumnSql( $column );
 
 					$afterColumn = $column->getAfter();

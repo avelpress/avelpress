@@ -6,3 +6,4 @@
 
 /docs/ export-ignore
 /README.md export-ignore
+/.vscode export-ignore
