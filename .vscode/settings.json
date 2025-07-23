@@ -1,0 +1,6 @@
+{
+  "editor.formatOnSave": true,
+  "php.format.codeStyle": "WordPress",
+  "php.inlayHints.types.return": false,
+  "php.stubs": ["*", "php", "wordpress"]
+}

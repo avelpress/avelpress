@@ -1,0 +1,8 @@
+/vendor
+/composer.sh
+/node_modules
+/docs/.vitepress/cache
+/docs/.vitepress/dist
+
+/docs/ export-ignore
+/README.md export-ignore

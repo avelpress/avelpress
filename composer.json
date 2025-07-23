@@ -1,0 +1,21 @@
+{
+    "name": "avelpress/avelpress",
+    "description": "AvelPress is a framework for creating WordPress plugins based on Laravel. It includes support for database (Laravel Eloquent), Controllers, Validator, Routes, and more.",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "AvelPress\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Marcos Gomes Neto",
+            "homepage": "https://github.com/marcosgomesneto"
+        }
+    ],
+    "bin": [
+        "bin/avel"
+    ]
+}
