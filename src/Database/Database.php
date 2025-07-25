@@ -89,6 +89,12 @@ class Database {
 		return $this->wpdb->prepare( $query, $args );
 	}
 
+
+	public static function table( $table ) {
+		$model = new DynamicModel( [], self::getTableName( $table ) );
+		return $model->getQueryBuilder();
+	}
+
 	/**
 	 * Run a query
 	 *

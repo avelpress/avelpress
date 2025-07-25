@@ -61,7 +61,7 @@ abstract class Model implements \ArrayAccess {
 	 * 
 	 * @return Model
 	 */
-	protected static function getInstance() {
+	public static function getInstance() {
 		$class = get_called_class();
 		if ( ! isset( self::$instances[ $class ] ) ) {
 			self::$instances[ $class ] = new $class( [] );
@@ -74,12 +74,12 @@ abstract class Model implements \ArrayAccess {
 	 *
 	 * @since 1.0.0
 	 * 
-	 * @param Database $db
 	 * @param array $data
+	 * @param string|null $table
 	 */
-	public function __construct( $data = [] ) {
+	public function __construct( $data = [], $table = null ) {
 		$this->db = AvelPress::app( 'database' );
-		$this->table = $this->generateTableName();
+		$this->table = $table ?? self::getFullTableName();
 		$this->foregin_key = $this->modelToForeign( get_called_class() );
 
 		$this->data = $data;
@@ -89,7 +89,7 @@ abstract class Model implements \ArrayAccess {
 		}
 	}
 
-	public static function generateTableName() {
+	public static function getFullTableName() {
 		$class = get_called_class();
 		$defaultTableName = Reflection::getDefaultValue( $class, 'table' );
 
@@ -132,6 +132,12 @@ abstract class Model implements \ArrayAccess {
 	public static function query() {
 		$instance = self::getInstance();
 		$queryBuilder = new QueryBuilder( $instance );
+		return $queryBuilder;
+	}
+
+
+	public function getQueryBuilder() {
+		$queryBuilder = new QueryBuilder( $this );
 		return $queryBuilder;
 	}
 
@@ -281,10 +287,12 @@ abstract class Model implements \ArrayAccess {
 	 * @return Model|false
 	 */
 	public static function create( $columns_values ) {
-		$tableName = self::generateTableName();
+		$instance = self::getInstance();
+
+		$tableName = $instance->getTableName();
 
 		foreach ( $columns_values as $key => $value ) {
-			$columns_values[ $key ] = self::getInstance()->setAttributeValue( $key, $value, $columns_values );
+			$columns_values[ $key ] = $instance->setAttributeValue( $key, $value, $columns_values );
 		}
 
 		if ( self::usesTimestamps() ) {

@@ -311,7 +311,7 @@ class QueryBuilder {
 				 */
 				$hasOne = $method->invoke( $this->model );
 				$related_class = $hasOne->getRelatedClass();
-				$table_name = $related_class::generateTableName();
+				$table_name = $related_class::getFullTableName();
 
 				$this->joinArray[] = [ 
 					'table' => $table_name,
@@ -344,7 +344,8 @@ class QueryBuilder {
 				 */
 				$belongsTo = $method->invoke( $this->model );
 				$related_class = $belongsTo->getRelatedClass();
-				$table_name = $related_class::generateTableName();
+				$table_name = $related_class::getFullTableName();
+
 
 				$this->joinArray[] = [ 
 					'table' => $table_name,
@@ -745,7 +746,7 @@ class QueryBuilder {
 				$relation = $relations[ $result->$primaryKey ] ?? [];
 				$result = array_merge( (array) $result, $relation );
 			}
-			$itemModel = new $this->model( (array) $result );
+			$itemModel = new $this->model( (array) $result, $this->model->getTableName() );
 			$itemModel->setWasRetrieved( true );
 
 			$items[] = $itemModel;
