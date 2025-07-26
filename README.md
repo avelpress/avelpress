@@ -4,7 +4,10 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PHP Version](https://img.shields.io/badge/PHP-7.4%2B-blue.svg)](https://php.net)
+
 [![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)](https://wordpress.org)
+
+[📚 Official Documentation](https://avelpress.com)
 
 AvelPress brings the elegance and power of Laravel's architecture to WordPress development. Build robust, maintainable plugins and themes using familiar patterns like Eloquent ORM, Service Providers, Facades, and more.
 
@@ -299,13 +302,20 @@ if ($validator->fails()) {
 
 ## 📚 Documentation
 
-- [Installation Guide](docs/guide/installation.md)
-- [Getting Started](docs/guide/getting-started.md)
-- [Application Structure](docs/guide/application-structure.md)
-- [Database & Migrations](docs/guide/database.md)
-- [Models & Relationships](docs/guide/models.md)
-- [Controllers & Routing](docs/guide/routing.md)
-- [Service Providers](docs/guide/service-providers.md)
+- [Official Documentation](https://avelpress.com)
+- [Getting Started](../doc/avelpress-documentation/guide/getting-started.md)
+- [Introduction](../doc/avelpress-documentation/guide/introduction.md)
+- [Installation](../doc/avelpress-documentation/guide/installation.md)
+- [WordPress Integration](../doc/avelpress-documentation/guide/wordpress-integration.md)
+- [Application Structure](../doc/avelpress-documentation/guide/core/application-structure.md)
+- [CLI Commands](../doc/avelpress-documentation/guide/core/cli.md)
+- [Service Providers](../doc/avelpress-documentation/guide/core/service-providers.md)
+- [Collections](../doc/avelpress-documentation/guide/core/collections.md)
+- [Database Getting Started](../doc/avelpress-documentation/guide/database/getting-started.md)
+- [Eloquent ORM](../doc/avelpress-documentation/guide/database/eloquent.md)
+- [Migrations](../doc/avelpress-documentation/guide/database/migrations.md)
+- [Models](../doc/avelpress-documentation/guide/models/model.md)
+- [Routing](../doc/avelpress-documentation/guide/routing/overview.md)
 
 ## 🤝 Contributing
 
@@ -337,7 +347,7 @@ AvelPress is open-sourced software licensed under the [MIT license](LICENSE).
 
 ## 🔗 Links
 
-- [Documentation](https://avelpress.dev/docs)
+- [Documentation](https://avelpress.com)
 - [CLI Tool](https://github.com/avelpress/avelpress-cli)
 - [Examples](https://github.com/avelpress/avelpress-examples)
 - [Community](https://discord.gg/avelpress)
