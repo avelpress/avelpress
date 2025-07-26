@@ -14,5 +14,15 @@
             "name": "Marcos Gomes Neto",
             "homepage": "https://github.com/marcosgomesneto"
         }
-    ]
+    ],
+    "archive": {
+        "exclude": [
+            "/tests",
+            "/docs",
+            "/.vscode",
+            "*.md",
+            "build/",
+            "examples/"
+        ]
+    }
 }
