@@ -6,6 +6,10 @@
 [![PHP Version](https://img.shields.io/badge/PHP-7.4%2B-blue.svg)](https://php.net)
 
 [![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)](https://wordpress.org)
+[![Packagist](https://img.shields.io/packagist/v/avelpress/avelpress.svg)](https://packagist.org/packages/avelpress/avelpress)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/avelpress/avelpress.svg)](https://packagist.org/packages/avelpress/avelpress)
+
+[📦 View on Packagist](https://packagist.org/packages/avelpress/avelpress)
 
 [📚 Official Documentation](https://avelpress.com)
 
@@ -335,6 +339,13 @@ composer install
 composer test
 ```
 
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://php.net"><img src="https://img.shields.io/badge/PHP-7.4%2B-blue.svg" alt="PHP Version"></a>
+  <a href="https://wordpress.org"><img src="https://img.shields.io/badge/WordPress-5.0%2B-blue.svg" alt="WordPress"></a>
+  <a href="https://packagist.org/packages/avelpress/avelpress"><img src="https://img.shields.io/badge/Packagist-v1.0.0-blue.svg" alt="Packagist"></a>
+  <a href="https://packagist.org/packages/avelpress/avelpress"><img src="https://img.shields.io/badge/Downloads-1000%2B-brightgreen.svg" alt="Packagist Downloads"></a>
+</p>
 ## 📄 License
 
 AvelPress is open-sourced software licensed under the [MIT license](LICENSE).
