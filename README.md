@@ -38,11 +38,20 @@ Install the AvelPress CLI globally:
 composer global require avelpress/avelpress-cli
 ```
 
+Or Install locally
+
+```bash
+composer require avelpress/avelpress-cli --dev
+```
+
 ### Create Your First Plugin
 
 ```bash
 # Create a new plugin
 avel new acme/my-awesome-plugin
+
+# if installed locally
+./vendor/bin/avel new acme/my-awesome-plugin
 
 # Navigate to the project
 cd acme-my-awesome-plugin
