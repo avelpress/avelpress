@@ -14,6 +14,25 @@ class Router {
 	protected $prefixStack = [];
 	protected $guardStack = [];
 
+	/**
+	 * @var Router|null
+	 */
+	protected $parentRouter = null;
+
+	protected $routeType = 'rest';
+	protected $page;
+
+	protected $pageOptions = [];
+
+	/**
+	 * Router constructor.
+	 *
+	 * @param Router|null $parentRouter
+	 */
+	public function __construct( $parentRouter = null ) {
+		$this->parentRouter = $parentRouter;
+	}
+
 	public function get( $uri, $action = null ) {
 		return $this->addRoute( 'GET', $uri, $action );
 	}
@@ -33,15 +52,56 @@ class Router {
 	public function addRoute( $httpMethod, $uri, $action ) {
 
 		$uri = $this->parseUriParameters( $uri );
+		$prefix = trim( $this->applyPrefix(), '/' );
 
+		if ( $this->routeType === 'admin' ) {
+			$this->registerAdminRoute( $action, "{$prefix}/{$uri}" );
+		} elseif ( $this->routeType === 'rest' ) {
+			$this->registerRestRoute( $prefix, $uri, $action, $httpMethod );
+		}
+
+		return $this->routes[] = [ 
+			'method' => $httpMethod,
+			'uri' => $uri,
+			'action' => $action,
+			'guards' => $this->guardStack,
+		];
+	}
+
+	protected function registerAdminRoute( $action, $path ) {
+		$menu_slug = $this->page;
+		$capability = 'manage_options';
+
+		add_submenu_page(
+			null,
+			$this->page,
+			$this->page,
+			$this->guardStack ? $this->guardStack[0] : $capability,
+			$menu_slug,
+			function () use ($action, $path) {
+				if ( ! isset( $_GET['path'] ) || trim( $_GET['path'], "/" ) === trim( $path, "/" ) ) {
+					$this->processRequest( $action, [] );
+				} else {
+					return new \WP_Error( 'not_found', 'Page not found', [ 'status' => 404 ] );
+				}
+			}
+		);
+	}
+
+	protected function registerRestRoute( $prefix, $uri, $action, $httpMethod = 'GET' ) {
 		register_rest_route(
-			trim( $this->applyPrefix(), '/' ),
+			$prefix,
 			$uri,
 			[ 
 				'methods' => $httpMethod,
 				'callback' => function (\WP_REST_Request $request) use ($action) {
 					try {
-						return $this->processRequest( $action, $request );
+						$response = $this->processRequest( $action, $request );
+						if ( $response instanceof ResourceCollection || $response instanceof JsonResource ) {
+							return rest_ensure_response( $response->toArray() );
+						}
+						return rest_ensure_response( $response );
+
 					} catch (\Exception $e) {
 						return new \WP_Error( 'server_error', $e->getMessage(), [ 'status' => 500 ] );
 					}
@@ -68,16 +128,18 @@ class Router {
 				}
 			]
 		);
-
-		return $this->routes[] = [ 
-			'method' => $httpMethod,
-			'uri' => $uri,
-			'action' => $action,
-			'guards' => $this->guardStack,
-		];
 	}
 
-	private function processRequest( $action, $request ) {
+	/**
+	 * Process the request and call the appropriate controller method.
+	 *
+	 * @param array $action
+	 * @param string $type "rest" or "admin"
+	 * @param mixed $request
+	 * 
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function processRequest( $action, $request = [] ) {
 		[ $controllerClass, $method ] = $action;
 
 		$reflector = new \ReflectionClass( $controllerClass );
@@ -98,17 +160,7 @@ class Router {
 			return $method_dependencies;
 		}
 
-		$response = call_user_func_array( [ $instance, $method ], $method_dependencies );
-
-		if ( $response instanceof ResourceCollection ) {
-			return rest_ensure_response( $response->toArray() );
-		}
-
-		if ( $response instanceof JsonResource ) {
-			return rest_ensure_response( $response->toArray() );
-		}
-
-		return rest_ensure_response( $response );
+		return call_user_func_array( [ $instance, $method ], $method_dependencies );
 	}
 
 	protected function parseUriParameters( $uri ) {
@@ -174,17 +226,41 @@ class Router {
 	public function group( callable $callback ) {
 		$prefixStackSizeBefore = count( $this->prefixStack );
 		$guardStackSizeBefore = count( $this->guardStack );
+		if ( $this->parentRouter )
+			$this->parentRouter->setPage( $this->page );
 
 		$callback( $this );
 
 		$this->prefixStack = array_slice( $this->prefixStack, 0, $prefixStackSizeBefore - 1 );
 		$this->guardStack = array_slice( $this->guardStack, 0, $guardStackSizeBefore - 1 );
+		if ( $this->parentRouter ) {
+			$this->parentRouter->setPage( null );
+		}
 
 		return $this;
 	}
 
 	public function guards( $guards ) {
 		$this->guardStack[] = $guards;
+		return $this;
+	}
+
+	public function setPage( $page ) {
+		$this->page = $page;
+		$this->admin();
+		if ( $this->parentRouter ) {
+			$this->parentRouter->setPage( $page );
+		}
+		return $this;
+	}
+
+	public function rest() {
+		$this->routeType = 'rest';
+		return $this;
+	}
+
+	public function admin() {
+		$this->routeType = 'admin';
 		return $this;
 	}
 
@@ -199,5 +275,12 @@ class Router {
 
 	public function getRoutes() {
 		return $this->routes;
+	}
+
+	public function page( $id, $options = [] ) {
+		$instance = new self( $this );
+		$instance->setPage( $id );
+
+		return $instance;
 	}
 }

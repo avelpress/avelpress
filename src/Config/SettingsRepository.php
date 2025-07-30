@@ -2,16 +2,24 @@
 
 namespace AvelPress\Config;
 
+use AvelPress\Foundation\Application;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Config repository.
+ * Settings repository.
  * 
  * @since   1.0.0
  */
-class ConfigRepository {
+class SettingsRepository {
 
 	protected $config;
+
+	protected $app;
+
+	public function construct( Application $app ) {
+		$this->app = $app;
+	}
 
 	/**
 	 * Merge two arrays recursively
@@ -41,18 +49,8 @@ class ConfigRepository {
 	}
 
 	public function __construct( $defaults = [] ) {
-		$base_dir = isset( $defaults['app'], $defaults['app']['base_path'] ) ? $defaults['app']['base_path'] : '';
-		$app_id = isset( $defaults['app'], $defaults['app']['id'] ) ? $defaults['app']['id'] : '';
-		$default_config = include "{$base_dir}src/config/app.php";
-
-		if ( ! empty( $base_dir ) )
-			$default_config['app']['base_path'] = $base_dir;
-
-		if ( ! empty( $app_id ) )
-			$default_config['app']['id'] = $app_id;
-
-		$saved_config = get_option( "{$app_id}_settings", [] );
-		$this->config = $this->mergeConfig( $default_config, $saved_config );
+		$saved_config = get_option( "{$this->app->getId()}_settings", [] );
+		$this->config = $this->mergeConfig( $defaults, $saved_config );
 	}
 
 	/**

@@ -33,6 +33,10 @@ class AvelPress {
 
 		self::$app = new Application( $id, $config['base_path'] );
 
+		self::$app->bootstrap();
+
+		do_action( "{$id}_app_booted", self::$app );
+
 		return self::$app;
 	}
 

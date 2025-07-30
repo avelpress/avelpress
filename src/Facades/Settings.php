@@ -13,13 +13,14 @@ defined( 'ABSPATH' ) || exit;
  * @method static float float(string $key, \Closure|float|null $default = null)
  * @method static bool boolean(string $key, \Closure|bool|null $default = null)
  * @method static array array(string $key, \Closure|array|null $default = null)
+ * @method static void update(string $key, mixed $value)
  * @method static array all()
  *
  * @see \AvelPress\Config\ConfigRepository
  */
-class Config extends Facade {
+class Settings extends Facade {
 
 	protected static function getFacadeAccessor() {
-		return 'config';
+		return 'settings';
 	}
 }

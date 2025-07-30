@@ -2,9 +2,11 @@
 
 namespace AvelPress\Foundation;
 
+use AvelPress\Admin\AdminServiceProvider;
 use AvelPress\Config\ConfigServiceProvider;
 use AvelPress\Database\DatabaseServiceProvider;
 use AvelPress\Routing\RouterServiceProvider;
+use AvelPress\View\ViewServiceProvider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -18,8 +20,6 @@ class Application {
 	protected $routeFiles = [];
 
 	protected $migrationFolders = [];
-
-	//**asdasd */
 	protected $basePath;
 
 	public function __construct( $id, $basePath = null ) {
@@ -33,9 +33,6 @@ class Application {
 		$this->registerBaseServiceProviders();
 		$this->registerServiceProviders();
 		$this->registerCoreContainerAliases();
-		$this->bootstrap();
-
-		do_action( "{$this->id}_app_booted", $this );
 	}
 
 	public function getId() {
@@ -44,6 +41,10 @@ class Application {
 
 	public function getBasePath() {
 		return $this->basePath;
+	}
+
+	public function getPluginFile() {
+		return "{$this->getBasePath()}/{$this->getId()}";
 	}
 
 	public function booted( \Closure $callback ) {
@@ -61,6 +62,8 @@ class Application {
 		$this->register( new ConfigServiceProvider( $this ) );
 		$this->register( new RouterServiceProvider( $this ) );
 		$this->register( new DatabaseServiceProvider( $this ) );
+		$this->register( new ViewServiceProvider( $this ) );
+		$this->register( new AdminServiceProvider( $this ) );
 	}
 
 	protected function registerServiceProviders() {
@@ -105,16 +108,29 @@ class Application {
 
 	}
 
-	public function addRouteFile( $path ) {
-		$this->routeFiles[] = $path;
+	public function addRouteFile( $path, $type = 'api' ) {
+		$this->routeFiles[] = [ 
+			'type' => $type,
+			'path' => $path
+		];
 	}
 
 	public function addMigrationFolder( $path ) {
 		$this->migrationFolders[] = $path;
 	}
 
-	public function getRouteFiles() {
-		return $this->routeFiles;
+	public function getRestRouteFiles() {
+		return array_map(
+			fn( $route ) => $route['path'],
+			array_filter( $this->routeFiles, fn( $route ) => $route['type'] === 'api' )
+		);
+	}
+
+	public function getAdminRouteFiles() {
+		return array_map(
+			fn( $route ) => $route['path'],
+			array_filter( $this->routeFiles, fn( $route ) => $route['type'] === 'admin' )
+		);
 	}
 
 	public function getMigrationFolders() {
