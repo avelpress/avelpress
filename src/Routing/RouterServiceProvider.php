@@ -14,7 +14,7 @@ class RouterServiceProvider extends ServiceProvider {
 
 	public function boot() {
 		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
-		add_action( 'admin_menu', [ $this, 'register_admin_routes' ] );
+		add_action( 'admin_menu', [ $this, 'register_admin_routes' ], 99 );
 	}
 
 	public function register_rest_routes() {

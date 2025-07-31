@@ -2,17 +2,20 @@
 
 namespace AvelPress\Admin;
 
+use AvelPress\Facades\Config;
+
 defined( 'ABSPATH' ) || exit;
 
 class AdminManager {
 
-	/**
-	 * @var Menu[]
-	 */
 	private $menuPages = [];
 
 	public function __construct() {
-		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
+
+	}
+
+	public function init() {
+
 		add_action( 'in_admin_header', [ $this, 'hide_notices' ], 99 );
 	}
 
@@ -27,12 +30,6 @@ class AdminManager {
 	 *   'hide_notices' => (bool) Whether to hide notices on this page (optional, default: false)
 	 * ]
 	 */
-	public function addMenu( array $args ) {
-		$page = new Menu( $args );
-		$this->menuPages[] = $page;
-		return $page;
-	}
-
 
 	public function maybeHideNotices() {
 		if ( ! isset( $_GET['page'] ) ) {
@@ -61,32 +58,5 @@ class AdminManager {
 	public function silence_render() {
 	}
 
-	public function admin_menu() {
-		foreach ( $this->menuPages as $menu ) {
-			add_menu_page(
-				$menu->getTitle(),
-				$menu->getTitle(),
-				$menu->getCapability(),
-				$menu->getId(),
-				[ $this, 'silence_render' ],
-				$menu->getIcon() ?? 'dashicons-admin-generic',
-				$menu->getPosition() ?? 60
-			);
 
-			foreach ( $menu->getSubmenus() as $submenu ) {
-				add_submenu_page(
-					$menu->getId(),
-					$submenu->getTitle(),
-					$submenu->getTitle(),
-					$submenu->getCapability(),
-					$submenu->getId(),
-					[ $this, 'silence_render' ]
-				);
-			}
-
-			if ( $menu->isFuse() ) {
-				remove_submenu_page( $menu->getId(), $menu->getId() );
-			}
-		}
-	}
 }

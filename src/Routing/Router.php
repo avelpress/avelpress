@@ -55,7 +55,7 @@ class Router {
 		$prefix = trim( $this->applyPrefix(), '/' );
 
 		if ( $this->routeType === 'admin' ) {
-			$this->registerAdminRoute( $action, "{$prefix}/{$uri}" );
+			$this->registerAdminRoute( $action, "{$prefix}{$uri}" );
 		} elseif ( $this->routeType === 'rest' ) {
 			$this->registerRestRoute( $prefix, $uri, $action, $httpMethod );
 		}
@@ -69,15 +69,12 @@ class Router {
 	}
 
 	protected function registerAdminRoute( $action, $path ) {
-		$menu_slug = $this->page;
-		$capability = 'manage_options';
-
 		add_submenu_page(
 			null,
 			$this->page,
 			$this->page,
-			$this->guardStack ? $this->guardStack[0] : $capability,
-			$menu_slug,
+			$this->guardStack ? $this->guardStack[0] : 'manage_options',
+			$this->page,
 			function () use ($action, $path) {
 				if ( ! isset( $_GET['path'] ) || trim( $_GET['path'], "/" ) === trim( $path, "/" ) ) {
 					$this->processRequest( $action, [] );
