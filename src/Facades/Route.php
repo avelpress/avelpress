@@ -6,6 +6,9 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * @method static \AvelPress\Routing\Router get(string $uri, array|string|callable|null $action = null)
+ * @method static \AvelPress\Routing\Router post(string $uri, array|string|callable|null $action = null)
+ * @method static \AvelPress\Routing\Router put(string $uri, array|string|callable|null $action = null)
+ * @method static \AvelPress\Routing\Router patch(string $uri, array|string|callable|null $action = null)
  * @method static \AvelPress\Routing\Router prefix(string $prefix)
  * @method static \AvelPress\Routing\Router guards(array $guards)
  *

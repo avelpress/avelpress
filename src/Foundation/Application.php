@@ -6,6 +6,7 @@ use AvelPress\Admin\AdminServiceProvider;
 use AvelPress\Config\ConfigServiceProvider;
 use AvelPress\Database\DatabaseServiceProvider;
 use AvelPress\Routing\RouterServiceProvider;
+use AvelPress\Utils\Str;
 use AvelPress\View\ViewServiceProvider;
 
 defined( 'ABSPATH' ) || exit;
@@ -13,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
 class Application {
 
 	protected $id;
+
+	protected $snake_id;
 	protected $instances = [];
 	protected $bindings = [];
 	protected $serviceProviders = [];
@@ -22,12 +25,20 @@ class Application {
 	protected $migrationFolders = [];
 	protected $basePath;
 
-	public function __construct( $id, $basePath = null ) {
-		$this->id = $id;
+	protected $pluginRoot;
 
-		if ( $basePath ) {
-			$this->setBasePath( $basePath );
+	public function __construct( $id, $config = [] ) {
+		$this->id = $id;
+		$this->snake_id = Str::toSnake( $id );
+
+		if ( isset( $config['base_path'] ) ) {
+			$this->setBasePath( $config['base_path'] );
 		}
+
+		if ( isset( $config['plugin_root'] ) ) {
+			$this->pluginRoot = rtrim( $config['plugin_root'], '/' );
+		}
+
 
 		$this->registerBaseBindings();
 		$this->registerBaseServiceProviders();
@@ -39,16 +50,24 @@ class Application {
 		return $this->id;
 	}
 
+	public function getIdAsUnderscore() {
+		return str_replace( '-', '_', $this->id );
+	}
+
 	public function getBasePath() {
 		return $this->basePath;
 	}
 
+	public function pluginRoot() {
+		return $this->pluginRoot;
+	}
+
 	public function getPluginFile() {
-		return "{$this->getBasePath()}/{$this->getId()}";
+		return "{$this->pluginRoot()}/{$this->getId()}.php";
 	}
 
 	public function booted( \Closure $callback ) {
-		add_action( "{$this->id}_app_booted", $callback );
+		add_action( "{$this->snake_id}_app_booted", $callback );
 	}
 
 	protected function setBasePath( $basePath ) {
@@ -171,10 +190,23 @@ class Application {
 				$instance = $this->build( $binding['concrete'] );
 				$this->instances[ $abstract ] = $instance;
 				return $instance;
+			} else {
+				return $this->build( $binding['concrete'] );
 			}
 		}
 
 		return $this->build( $abstract );
+	}
+
+	public function version() {
+		$plugin_file = $this->getPluginFile();
+
+		$data = get_file_data(
+			$plugin_file,
+			[ 'Version' => 'Version' ]
+		);
+
+		return $data['Version'] ?? '1.0.0';
 	}
 
 	protected function build( $concrete ) {

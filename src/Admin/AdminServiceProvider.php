@@ -24,13 +24,24 @@ class AdminServiceProvider extends ServiceProvider {
 
 	public function boot() {
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
+		add_action( 'init', [ $this, 'admin_setup' ] );
 
 		$this->app->make( WooCommerce::class)->init();
 		$this->app->make( 'admin.manager' )->init();
 	}
 
+	public function admin_setup(): void {
+		$setup_class = Config::string( 'app.admin_setup_class' );
+
+		if ( ! class_exists( $setup_class ) ) {
+			return;
+		}
+
+		$setup = new $setup_class();
+	}
+
 	public function admin_menu() {
-		$menu_class = Config::string( 'app.menu_class' );
+		$menu_class = Config::string( 'app.admin_menu_class' );
 
 		if ( ! class_exists( $menu_class ) ) {
 			return;

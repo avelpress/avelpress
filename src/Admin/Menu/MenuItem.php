@@ -11,6 +11,10 @@ abstract class MenuItem {
 	protected $icon;
 	protected $path;
 
+	protected $view;
+
+	protected $scripts = [];
+
 	public function slug( $slug ) {
 		$this->slug = $slug;
 		return $this;
@@ -54,6 +58,18 @@ abstract class MenuItem {
 
 	public function getPath() {
 		return $this->path;
+	}
+
+	/**
+	 * Registred scripts to be enqueued for this menu item.
+	 * 
+	 * @param array $scripts
+	 * 
+	 * @return static
+	 */
+	public function scripts( $scripts ) {
+		$this->scripts = $scripts;
+		return $this;
 	}
 
 	public function toArray() {

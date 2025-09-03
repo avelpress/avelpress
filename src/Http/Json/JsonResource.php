@@ -40,4 +40,12 @@ class JsonResource {
 
 		return null;
 	}
+
+	public function __call( $method, $arguments ) {
+		if ( isset( $this->resource ) && method_exists( $this->resource, $method ) ) {
+			return call_user_func_array( [ $this->resource, $method ], $arguments );
+		}
+
+		throw new \BadMethodCallException( "Method {$method} does not exist on " . get_class( $this ) . " or its resource." );
+	}
 }

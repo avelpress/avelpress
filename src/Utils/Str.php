@@ -58,4 +58,8 @@ class Str {
 			}
 		}
 	}
+
+	public static function toSnake( string $string ): string {
+		return str_replace( '-', '_', $string );
+	}
 }

@@ -2,14 +2,14 @@
 
 namespace AvelPress\Routing;
 
-use AvelPress\Routing\Router;
+use AvelPress\Routing\RouterBuilder;
 use AvelPress\Support\ServiceProvider;
 
 defined( 'ABSPATH' ) || exit;
 
 class RouterServiceProvider extends ServiceProvider {
 	public function register() {
-		$this->app->singleton( 'router', Router::class);
+		$this->app->singleton( 'router', RouterBuilder::class);
 	}
 
 	public function boot() {

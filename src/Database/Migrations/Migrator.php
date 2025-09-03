@@ -23,7 +23,7 @@ class Migrator {
 
 	public function __construct( Application $app ) {
 		$this->app = $app;
-		$this->prefix = $app->getId();
+		$this->prefix = $app->getIdAsUnderscore();
 		$this->path = $app->getBasePath();
 	}
 

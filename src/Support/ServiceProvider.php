@@ -28,8 +28,8 @@ class ServiceProvider {
 
 	}
 
-	public function loadRoutesFrom( $path ) {
-		$this->app->addRouteFile( $path );
+	public function loadRoutesFrom( $path, $type = 'api' ) {
+		$this->app->addRouteFile( $path, $type );
 	}
 
 	public function loadMigrationsFrom( $path ) {

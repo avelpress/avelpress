@@ -76,6 +76,9 @@ class Blueprint {
 			case 'integer':
 				$sql .= ' int(11)';
 				break;
+			case 'boolean':
+				$sql .= ' tinyint(1)';
+				break;
 			case 'string':
 				$length = $column->length ?? 255;
 				$sql .= " varchar($length)";
@@ -254,6 +257,11 @@ class Blueprint {
 
 	public function text( $column ) {
 		return $this->addColumn( 'text', $column );
+	}
+
+
+	public function boolean( $column ) {
+		return $this->addColumn( 'boolean', $column );
 	}
 
 	/**

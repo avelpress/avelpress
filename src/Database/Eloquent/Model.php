@@ -705,7 +705,7 @@ abstract class Model implements \ArrayAccess {
 	 * @param mixed $condition
 	 * @param callable(QueryBuilder $query) $callback
 	 * 
-	 * @return mixed
+	 * @return QueryBuilder|mixed
 	 */
 	public static function when( $condition, $callback ) {
 		if ( isset( $condition ) && ! empty( $condition ) && $condition !== false ) {

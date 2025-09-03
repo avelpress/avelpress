@@ -19,61 +19,58 @@ class Router {
 	 */
 	protected $parentRouter = null;
 
+	protected $routerBuilder = null;
+
 	protected $routeType = 'rest';
 	protected $page;
+
+	protected $groupDepth = 0;
 
 	protected $pageOptions = [];
 
 	/**
 	 * Router constructor.
 	 *
+	 * @param RouterBuilder $routerBuilder
 	 * @param Router|null $parentRouter
 	 */
-	public function __construct( $parentRouter = null ) {
+	public function __construct( $routerBuilder, $parentRouter = null ) {
+		$this->routerBuilder = $routerBuilder;
 		$this->parentRouter = $parentRouter;
-	}
-
-	public function get( $uri, $action = null ) {
-		return $this->addRoute( 'GET', $uri, $action );
-	}
-
-	public function post( $uri, $action = null ) {
-		return $this->addRoute( 'POST', $uri, $action );
-	}
-
-	public function put( $uri, $action = null ) {
-		return $this->addRoute( 'PUT', $uri, $action );
-	}
-
-	public function delete( $uri, $action = null ) {
-		return $this->addRoute( 'DELETE', $uri, $action );
 	}
 
 	public function addRoute( $httpMethod, $uri, $action ) {
 
 		$uri = $this->parseUriParameters( $uri );
 		$prefix = trim( $this->applyPrefix(), '/' );
+		$guards = $this->applyGuards();
 
 		if ( $this->routeType === 'admin' ) {
 			$this->registerAdminRoute( $action, "{$prefix}{$uri}" );
 		} elseif ( $this->routeType === 'rest' ) {
-			$this->registerRestRoute( $prefix, $uri, $action, $httpMethod );
+			$this->registerRestRoute( $prefix, $uri, $action, $guards, $httpMethod );
 		}
 
 		return $this->routes[] = [ 
 			'method' => $httpMethod,
 			'uri' => $uri,
 			'action' => $action,
-			'guards' => $this->guardStack,
+			'guards' => $guards,
 		];
 	}
 
 	protected function registerAdminRoute( $action, $path ) {
+		$firstGuard = 'manage_options';
+		$currentGuards = $this->applyGuards();
+		if ( ! empty( $currentGuards ) ) {
+			$firstGuard = $currentGuards[0];
+		}
+
 		add_submenu_page(
 			null,
 			$this->page,
 			$this->page,
-			$this->guardStack ? $this->guardStack[0] : 'manage_options',
+			$firstGuard,
 			$this->page,
 			function () use ($action, $path) {
 				if ( ! isset( $_GET['path'] ) || trim( $_GET['path'], "/" ) === trim( $path, "/" ) ) {
@@ -83,9 +80,17 @@ class Router {
 				}
 			}
 		);
+
+		// add_action( 'load-' . $hook_suffix, function () use ($hook_suffix) {
+		// 	add_action( 'admin_enqueue_scripts', function ($hook) use ($hook_suffix) {
+		// 		if ( $hook === $hook_suffix ) {
+		// 			$here = 'hero';
+		// 		}
+		// 	} );
+		// } );
 	}
 
-	protected function registerRestRoute( $prefix, $uri, $action, $httpMethod = 'GET' ) {
+	protected function registerRestRoute( $prefix, $uri, $action, $guards, $httpMethod = 'GET' ) {
 		register_rest_route(
 			$prefix,
 			$uri,
@@ -103,8 +108,8 @@ class Router {
 						return new \WP_Error( 'server_error', $e->getMessage(), [ 'status' => 500 ] );
 					}
 				},
-				'permission_callback' => function () {
-					foreach ( $this->guardStack as $guard ) {
+				'permission_callback' => function () use ($guards) {
+					foreach ( $guards as $guard ) {
 						if ( is_callable( $guard ) ) {
 							if ( ! call_user_func( $guard ) ) {
 								return false;
@@ -202,7 +207,7 @@ class Router {
 						throw new \Exception( "WP_REST_Request requested but no request available for parameter: {$param->getName()}" );
 					}
 				} else {
-					$resolved[] = AvelPress::app()->make( $className );
+					$resolved[] = AvelPress::app( $className );
 				}
 			} elseif ( $param->isDefaultValueAvailable() ) {
 				$resolved[] = $param->getDefaultValue();
@@ -216,29 +221,48 @@ class Router {
 
 
 	public function prefix( $prefix ) {
-		$this->prefixStack[] = trim( $prefix, '/' );
+		$this->prefixStack[ $this->groupDepth ] = [ 
+			'prefix' => trim( $prefix, '/' ),
+			'depth' => $this->groupDepth
+		];
 		return $this;
 	}
 
 	public function group( callable $callback ) {
-		$prefixStackSizeBefore = count( $this->prefixStack );
-		$guardStackSizeBefore = count( $this->guardStack );
+		$this->routerBuilder->increaseGroupDepth();
+		$this->groupDepth++;
+
 		if ( $this->parentRouter )
 			$this->parentRouter->setPage( $this->page );
 
+
 		$callback( $this );
 
-		$this->prefixStack = array_slice( $this->prefixStack, 0, $prefixStackSizeBefore - 1 );
-		$this->guardStack = array_slice( $this->guardStack, 0, $guardStackSizeBefore - 1 );
+		// Remove prefixes and guards from current depth
+		$this->prefixStack = array_filter( $this->prefixStack, function ($item) {
+			return $item['depth'] < $this->groupDepth;
+		} );
+
+		$this->guardStack = array_filter( $this->guardStack, function ($item) {
+			return $item['depth'] < $this->groupDepth;
+		} );
+
 		if ( $this->parentRouter ) {
 			$this->parentRouter->setPage( null );
 		}
+
+		$this->routerBuilder->decreaseGroupDepth();
+		$this->groupDepth--;
 
 		return $this;
 	}
 
 	public function guards( $guards ) {
-		$this->guardStack[] = $guards;
+		//TODO: fix this pass others Routes
+		$this->guardStack[ $this->groupDepth ] = [ 
+			'guards' => $guards,
+			'depth' => $this->groupDepth
+		];
 		return $this;
 	}
 
@@ -263,11 +287,35 @@ class Router {
 
 	protected function applyPrefix() {
 		if ( ! empty( $this->prefixStack ) ) {
-			$fullPrefix = implode( '/', $this->prefixStack );
+			// Filter prefixes that are at or below the current depth
+			$currentPrefixes = array_filter( $this->prefixStack, function ($item) {
+				return $item['depth'] < $this->groupDepth;
+			} );
+
+			$prefixes = array_map( function ($item) {
+				return $item['prefix'];
+			}, $currentPrefixes );
+
+			$fullPrefix = implode( '/', $prefixes );
 			return '/' . $fullPrefix;
 		}
 
 		return '/';
+	}
+
+	protected function applyGuards() {
+		if ( ! empty( $this->guardStack ) ) {
+			// Filter guards that are at or below the current depth
+			$currentGuards = array_filter( $this->guardStack, function ($item) {
+				return $item['depth'] < $this->groupDepth;
+			} );
+
+			return array_map( function ($item) {
+				return $item['guards'];
+			}, $currentGuards );
+		}
+
+		return [];
 	}
 
 	public function getRoutes() {
@@ -275,7 +323,7 @@ class Router {
 	}
 
 	public function page( $id, $options = [] ) {
-		$instance = new self( $this );
+		$instance = new self( $this->routerBuilder, $this );
 		$instance->setPage( $id );
 
 		return $instance;

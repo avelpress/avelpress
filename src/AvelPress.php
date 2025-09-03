@@ -3,6 +3,7 @@
 namespace AvelPress;
 
 use AvelPress\Foundation\Application;
+use AvelPress\Utils\Str;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -24,18 +25,28 @@ class AvelPress {
 	 */
 	public static function init( string $id, array $config = [] ) {
 		if ( empty( $id ) ) {
-			throw new \InvalidArgumentException( 'O parâmetro "id" é obrigatório.' );
+			throw new \InvalidArgumentException( 'The "id" parameter is required.' );
 		}
 
 		if ( ! isset( $config['base_path'] ) ) {
-			throw new \InvalidArgumentException( 'O parâmetro "base_path" é obrigatório.' );
+			throw new \InvalidArgumentException( 'The "base_path" parameter is required.' );
 		}
 
-		self::$app = new Application( $id, $config['base_path'] );
+		if ( ! isset( $config['plugin_root'] ) ) {
+			$config['plugin_root'] = dirname( $config['base_path'] );
+		}
+
+		if ( ! file_exists( $config['plugin_root'] . "/$id.php" ) ) {
+			throw new \InvalidArgumentException( "The plugin file for '$id' does not exist in the specified plugin root, in AvelPress::init configure plugin_root." );
+		}
+
+		self::$app = new Application( $id, $config );
 
 		self::$app->bootstrap();
 
-		do_action( "{$id}_app_booted", self::$app );
+		$appIdSnake = Str::toSnake( $id );
+
+		do_action( "{$appIdSnake}_app_booted", self::$app );
 
 		return self::$app;
 	}
