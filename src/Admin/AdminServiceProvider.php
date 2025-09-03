@@ -31,7 +31,7 @@ class AdminServiceProvider extends ServiceProvider {
 	}
 
 	public function admin_setup(): void {
-		$setup_class = Config::string( 'app.admin_setup_class' );
+		$setup_class = $this->app->make( 'config' )->string( 'app.admin_setup_class' );
 
 		if ( ! class_exists( $setup_class ) ) {
 			return;
@@ -41,7 +41,7 @@ class AdminServiceProvider extends ServiceProvider {
 	}
 
 	public function admin_menu() {
-		$menu_class = Config::string( 'app.admin_menu_class' );
+		$menu_class = $this->app->make( 'config' )->string( 'app.admin_menu_class' );
 
 		if ( ! class_exists( $menu_class ) ) {
 			return;

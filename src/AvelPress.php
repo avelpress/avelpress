@@ -11,9 +11,9 @@ class AvelPress {
 	/**
 	 * AvelPress Application Container.
 	 *
-	 * @var Application
+	 * @var Application[]
 	 */
-	private static $app;
+	private static $apps = [];
 
 	/**
 	 * Initializes the AvelPress configuration.
@@ -40,23 +40,50 @@ class AvelPress {
 			throw new \InvalidArgumentException( "The plugin file for '$id' does not exist in the specified plugin root, in AvelPress::init configure plugin_root." );
 		}
 
-		self::$app = new Application( $id, $config );
+		self::$apps[ $id ] = new Application( $id, $config );
 
-		self::$app->bootstrap();
+		self::$apps[ $id ]->bootstrap();
 
 		$appIdSnake = Str::toSnake( $id );
 
-		do_action( "{$appIdSnake}_app_booted", self::$app );
+		do_action( "{$appIdSnake}_app_booted", self::$apps[ $id ] );
 
-		return self::$app;
+		return self::$apps[ $id ];
 	}
 
+	/**
+	 * Get an app instance or a service from a specific app.
+	 *
+	 * @param string|null $service Service name.
+	 * @return mixed
+	 */
 	public static function app( $service = null ) {
+		$appId = null;
 
-		if ( ! $service ) {
-			return self::$app;
+		if ( count( self::$apps ) > 1 && class_exists( 'AvelPress\Cli\Kernel' ) ) {
+			$trace = debug_backtrace();
+			foreach ( $trace as $frame ) {
+				if ( isset( $frame['file'] ) ) {
+					foreach ( array_keys( self::$apps ) as $id ) {
+						$pluginFile = self::$apps[ $id ]->pluginRoot();
+						if ( strpos( $frame['file'], $pluginFile ) !== false ) {
+							$appId = $id;
+							break 2;
+						}
+					}
+				}
+			}
 		}
 
-		return self::$app->make( $service );
+		if ( ! $appId ) {
+			// fallback to first app
+			$appId = array_key_first( self::$apps );
+		}
+
+		if ( ! $service ) {
+			return self::$apps[ $appId ];
+		}
+
+		return self::$apps[ $appId ]->make( $service );
 	}
 }
