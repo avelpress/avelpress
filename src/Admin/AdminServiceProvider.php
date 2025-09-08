@@ -24,7 +24,7 @@ class AdminServiceProvider extends ServiceProvider {
 
 	public function boot() {
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
-		add_action( 'init', [ $this, 'admin_setup' ] );
+		add_action( 'admin_init', [ $this, 'admin_setup' ] );
 
 		$this->app->make( WooCommerce::class)->init();
 		$this->app->make( 'admin.manager' )->init();
@@ -48,7 +48,7 @@ class AdminServiceProvider extends ServiceProvider {
 		}
 
 		/** @var MenuBuilder $adminMenu **/
-		$adminMenu = new $menu_class();
+		$adminMenu = new $menu_class( $this->app );
 		$adminMenu->register();
 		$adminMenu->create();
 	}

@@ -2,6 +2,7 @@
 
 namespace AvelPress\Routing;
 
+use AvelPress\Foundation\Application;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -9,6 +10,15 @@ class RouterBuilder {
 	protected $instances = [];
 
 	protected $groupDepth = 0;
+
+	/**
+	 * @var Application
+	 */
+	protected $app;
+
+	public function __construct( Application $app ) {
+		$this->app = $app;
+	}
 
 	/**
 	 * Get instance
@@ -35,6 +45,8 @@ class RouterBuilder {
 
 	public function page( $id, $options = [] ) {
 		$instance = $this->getInstance();
+
+		$this->app->make( 'admin.manager' )->addHiddenNoticesPage( $id );
 
 		$instance->page( $id, $options );
 

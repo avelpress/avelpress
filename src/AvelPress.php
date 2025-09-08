@@ -55,7 +55,7 @@ class AvelPress {
 	 * Get an app instance or a service from a specific app.
 	 *
 	 * @param string|null $service Service name.
-	 * @return mixed
+	 * @return Application|mixed
 	 */
 	public static function app( $service = null ) {
 		$appId = null;

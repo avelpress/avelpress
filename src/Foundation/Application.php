@@ -3,7 +3,9 @@
 namespace AvelPress\Foundation;
 
 use AvelPress\Admin\AdminServiceProvider;
+use AvelPress\Config\Config;
 use AvelPress\Config\ConfigServiceProvider;
+use AvelPress\Config\SettingsRepository;
 use AvelPress\Database\DatabaseServiceProvider;
 use AvelPress\Routing\RouterServiceProvider;
 use AvelPress\Utils\Str;
@@ -211,6 +213,10 @@ class Application {
 
 	protected function build( $concrete ) {
 		if ( $concrete instanceof \Closure ) {
+			$reflection = new \ReflectionFunction( $concrete );
+			if ( $reflection->getNumberOfParameters() > 0 ) {
+				return $concrete( $this );
+			}
 			return $concrete();
 		}
 
@@ -219,5 +225,24 @@ class Application {
 		}
 
 		return $concrete;
+	}
+
+	/**
+	 * Config Service
+	 * 
+	 * @return Config
+	 */
+	public function config() {
+		return $this->make( 'config' );
+	}
+
+
+	/**
+	 * Settings Service
+	 * 
+	 * @return SettingsRepository
+	 */
+	public function settings() {
+		return $this->make( 'settings' );
 	}
 }

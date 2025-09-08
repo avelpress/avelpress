@@ -2,13 +2,24 @@
 
 namespace AvelPress\Admin\Menu;
 
+use AvelPress\Foundation\Application;
+
 defined( 'ABSPATH' ) || exit;
 
 abstract class MenuBuilder {
 	protected $menus = [];
 	protected $groupCallback;
 
+	/**
+	 * @var Application
+	 */
+	protected $app;
+
 	abstract public function register();
+
+	public function __construct( Application $app ) {
+		$this->app = $app;
+	}
 
 	public function add( $slug, $title ) {
 		$menu = ( new Menu() )->slug( $slug )->title( $title );

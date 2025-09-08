@@ -73,7 +73,7 @@ class Router {
 			$firstGuard,
 			$this->page,
 			function () use ($action, $path) {
-				if ( ! isset( $_GET['path'] ) || trim( $_GET['path'], "/" ) === trim( $path, "/" ) ) {
+				if ( ! isset( $_GET['path'] ) || trim( $_GET['path'], "/" ) === trim( $path, "/" ) || $path === '*' ) {
 					$this->processRequest( $action, [] );
 				} else {
 					return new \WP_Error( 'not_found', 'Page not found', [ 'status' => 404 ] );

@@ -15,10 +15,18 @@ class SettingsRepository {
 
 	protected $config;
 
+	/**
+	 * App Instance
+	 * 
+	 * @var Application
+	 */
 	protected $app;
 
-	public function construct( Application $app ) {
+	public function __construct( Application $app, $defaults = [] ) {
 		$this->app = $app;
+
+		$saved_config = get_option( "{$this->app->getIdAsUnderscore()}_settings", [] );
+		$this->config = $this->mergeConfig( $defaults, $saved_config );
 	}
 
 	/**
@@ -48,35 +56,54 @@ class SettingsRepository {
 		return $merged;
 	}
 
-	public function __construct( $defaults = [] ) {
-		$saved_config = get_option( "{$this->app->getId()}_settings", [] );
-		$this->config = $this->mergeConfig( $defaults, $saved_config );
-	}
-
 	/**
 	 * Update config
 	 * 
 	 * @param mixed $name
 	 * @param mixed $value
 	 * 
-	 * @return void
+	 * @return bool
 	 */
 	public function update( $name, $value ) {
-		if ( is_array( $value ) ) {
-			foreach ( $value as $key => $val ) {
-				if ( is_bool( $val ) ) {
-					$value[ $key ] = $val ? 'yes' : 'no';
-				}
-			}
-		}
+		$processed_value = $this->processValue( $value );
 
 		$keys = explode( '.', $name );
 
-		$update_data = count( $keys ) > 1 ? $this->addKeyValueRecursively( $keys, $value ) : [ $name => $value ];
+		$update_data = count( $keys ) > 1 ? $this->addKeyValueRecursively( $keys, $processed_value ) : [ $name => $processed_value ];
 
 		$settings = $this->mergeConfig( $this->config, $update_data );
 
 		$this->config = $settings;
+
+		return $this->save();
+	}
+
+	/**
+	 * Process value for storage
+	 * 
+	 * @param mixed $value
+	 * 
+	 * @return mixed
+	 */
+	private function processValue( $value ) {
+		if ( is_array( $value ) ) {
+			foreach ( $value as $key => $val ) {
+				$value[ $key ] = $this->processValue( $val );
+			}
+		} elseif ( is_bool( $value ) ) {
+			return $value ? 'yes' : 'no';
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Save config to database
+	 * 
+	 * @return bool
+	 */
+	public function save() {
+		return update_option( "{$this->app->getIdAsUnderscore()}_settings", $this->config );
 	}
 
 	/**
@@ -135,12 +162,18 @@ class SettingsRepository {
 	 * @since 1.0.0
 	 * 
 	 * @param string $name
-	 * @param int $default
+	 * @param bool $default
 	 * 
-	 * @return int
+	 * @return bool
 	 */
-	public function boolean( $name, $default = null ) {
-		return $this->get( $name, $default ) === 'yes' ? true : false;
+	public function boolean( $name, $default = false ) {
+		$value = $this->get( $name, $default );
+
+		if ( is_bool( $value ) ) {
+			return $value;
+		}
+
+		return $value === 'yes' || $value === '1' || $value === 1 || $value === true;
 	}
 
 	/**
@@ -162,9 +195,57 @@ class SettingsRepository {
 	 * 
 	 * @since 1.0.0
 	 * 
-	 * @return mixed
+	 * @return array
 	 */
 	public function all() {
 		return $this->config;
+	}
+
+	/**
+	 * Delete a config key
+	 * 
+	 * @param string $name
+	 * 
+	 * @return bool
+	 */
+	public function delete( $name ) {
+		$keys = explode( '.', $name );
+		$config = &$this->config;
+
+		for ( $i = 0; $i < count( $keys ) - 1; $i++ ) {
+			if ( ! isset( $config[ $keys[ $i ] ] ) || ! is_array( $config[ $keys[ $i ] ] ) ) {
+				return false;
+			}
+			$config = &$config[ $keys[ $i ] ];
+		}
+
+		$lastKey = end( $keys );
+		if ( isset( $config[ $lastKey ] ) ) {
+			unset( $config[ $lastKey ] );
+			return $this->save();
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if config key exists
+	 * 
+	 * @param string $name
+	 * 
+	 * @return bool
+	 */
+	public function has( $name ) {
+		$names = explode( '.', $name );
+		$config = $this->config;
+
+		foreach ( $names as $key ) {
+			if ( ! isset( $config[ $key ] ) ) {
+				return false;
+			}
+			$config = $config[ $key ];
+		}
+
+		return true;
 	}
 }

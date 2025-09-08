@@ -19,5 +19,9 @@ class ConfigServiceProvider extends ServiceProvider {
 			}
 			return new Config( $config );
 		} );
+
+		$this->app->singleton( 'settings', function ($app) {
+			return new SettingsRepository( $app );
+		} );
 	}
 }

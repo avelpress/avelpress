@@ -6,6 +6,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * @method static \AvelPress\Admin\Page addMenu(array $args)
+ * @method static \AvelPress\Admin\Page addSubMenu(array $args)
  * 
  * @see \AvelPress\Admin\AdminManager
  */

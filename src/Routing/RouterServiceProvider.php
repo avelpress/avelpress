@@ -9,7 +9,9 @@ defined( 'ABSPATH' ) || exit;
 
 class RouterServiceProvider extends ServiceProvider {
 	public function register() {
-		$this->app->singleton( 'router', RouterBuilder::class);
+		$this->app->singleton( 'router', function ($app) {
+			return new RouterBuilder( $app );
+		} );
 	}
 
 	public function boot() {

@@ -8,14 +8,13 @@ defined( 'ABSPATH' ) || exit;
 
 class AdminManager {
 
-	private $menuPages = [];
+	private $hiddenPages = [];
 
 	public function __construct() {
 
 	}
 
 	public function init() {
-
 		add_action( 'in_admin_header', [ $this, 'hide_notices' ], 99 );
 	}
 
@@ -36,15 +35,16 @@ class AdminManager {
 			return false;
 		}
 		$current_page = $_GET['page'];
-		foreach ( $this->menuPages as $page ) {
-			if (
-				$page->getId() === $current_page &&
-				$page->getHideNotices()
-			) {
+		foreach ( $this->hiddenPages as $page ) {
+			if ( $current_page === $page ) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	public function addHiddenNoticesPage( $id ) {
+		$this->hiddenPages[] = $id;
 	}
 
 	public function hide_notices() {
