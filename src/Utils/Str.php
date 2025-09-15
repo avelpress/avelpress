@@ -62,4 +62,8 @@ class Str {
 	public static function toSnake( string $string ): string {
 		return str_replace( '-', '_', $string );
 	}
+
+	public static function startsWith( string $haystack, string $needle ): bool {
+		return strncmp( $haystack, $needle, strlen( $needle ) ) === 0;
+	}
 }

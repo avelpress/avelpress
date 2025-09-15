@@ -52,6 +52,11 @@ class Application {
 		return $this->id;
 	}
 
+	/**
+	 * Get id with underscore, ex: my-app-id => my_app_id
+	 * 
+	 * @return array|string
+	 */
 	public function getIdAsUnderscore() {
 		return str_replace( '-', '_', $this->id );
 	}

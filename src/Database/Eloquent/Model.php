@@ -330,6 +330,18 @@ abstract class Model implements \ArrayAccess {
 		return $instance->db->update( $instance->table, $columns_values, $where_values );
 	}
 
+	public static function updateOrCreate( array $where_values, array $columns_values ) {
+		$instance = self::getInstance();
+		$existing = $instance->where( $where_values )->first();
+
+		if ( $existing ) {
+			return $existing->update( $columns_values, $where_values );
+		} else {
+			$data = array_merge( $where_values, $columns_values );
+			return self::create( $data );
+		}
+	}
+
 	public function fill( array $data ) {
 		foreach ( $data as $key => $value ) {
 			if ( in_array( $key, $this->fillable ) || empty( $this->fillable ) ) {

@@ -43,6 +43,8 @@ class ColumnDefinition {
 
 	protected $primary = false;
 
+	protected $unique = false;
+
 	/**
 	 * The default value of the column.
 	 *
@@ -127,6 +129,16 @@ class ColumnDefinition {
 		$this->default = $value;
 
 		return $this;
+	}
+
+	public function unique() {
+		$this->unique = true;
+
+		return $this;
+	}
+
+	public function isUnique() {
+		return $this->unique;
 	}
 
 	/**

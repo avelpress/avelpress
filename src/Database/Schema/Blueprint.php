@@ -118,11 +118,22 @@ class Blueprint {
 	private function prepareColumns() {
 		$columnsSql = [];
 		$primaryKey = [];
+		$uniqueKeys = [];
 		foreach ( $this->columns as $column ) {
 			$columnsSql[] = $this->generateSingleColumnSql( $column );
 
 			if ( $column->isPrimary() ) {
 				$primaryKey[] = $column->getName();
+			}
+
+			if ( $column->isUnique() ) {
+				$uniqueKeys[] = $column->getName();
+			}
+		}
+
+		if ( ! empty( $uniqueKeys ) ) {
+			foreach ( $uniqueKeys as $uniqueKey ) {
+				$columnsSql[] = "UNIQUE KEY (`$uniqueKey`)";
 			}
 		}
 
@@ -141,7 +152,7 @@ class Blueprint {
 		return $columnsSql;
 	}
 
-	private function tableExists( $tableName ) {
+	public function tableExists( $tableName ) {
 		global $wpdb;
 
 		$exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $tableName ) );
@@ -160,13 +171,14 @@ class Blueprint {
 	public function run() {
 		global $wpdb;
 		if ( $this->command === 'create' ) {
-			$columnsSql = $this->prepareColumns();
 
 			$tableName = $wpdb->prefix . $this->table;
 
 			if ( $this->tableExists( $tableName ) ) {
 				return;
 			}
+
+			$columnsSql = $this->prepareColumns();
 
 			$columnsDef = implode( ",\n  ", $columnsSql );
 
@@ -262,6 +274,10 @@ class Blueprint {
 
 	public function boolean( $column ) {
 		return $this->addColumn( 'boolean', $column );
+	}
+
+	public function uuid( $column ) {
+		return $this->addColumn( 'string', $column, [ 'length' => 36 ] );
 	}
 
 	/**

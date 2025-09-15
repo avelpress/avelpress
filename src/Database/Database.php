@@ -78,6 +78,15 @@ class Database {
 		dbDelta( $sql );
 	}
 
+
+	public static function tableExists( $tableName ) {
+		global $wpdb;
+
+		$exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $tableName ) );
+
+		return $exists !== null;
+	}
+
 	/**
 	 * Prepare a query
 	 *
@@ -88,6 +97,7 @@ class Database {
 	public function prepare( $query, ...$args ) {
 		return $this->wpdb->prepare( $query, $args );
 	}
+
 
 
 	public static function table( $table ) {

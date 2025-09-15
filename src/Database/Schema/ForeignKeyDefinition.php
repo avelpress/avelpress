@@ -71,6 +71,12 @@ class ForeignKeyDefinition {
 			$column
 		);
 
+		if ( strlen( $constraintName ) > 64 ) {
+			$hash = substr( md5( $constraintName ), 0, 8 );
+			$base = substr( $constraintName, 0, 55 );
+			$constraintName = $base . '_' . $hash;
+		}
+
 		$sql = sprintf(
 			'CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s(%s)',
 			$constraintName,

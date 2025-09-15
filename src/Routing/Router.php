@@ -196,7 +196,8 @@ class Router {
 
 					if ( $form_request->fails() ) {
 						$errors = $form_request->errors();
-						return new \WP_Error( 'validation_error', 'Validation failed', $errors );
+						$firstError = reset( $errors ) ?: 'Validation error';
+						return new \WP_Error( 'validation_error', $firstError, $errors );
 					}
 
 					$resolved[] = $form_request;

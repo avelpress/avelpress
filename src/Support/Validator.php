@@ -98,7 +98,7 @@ class Validator {
 		return $this->data;
 	}
 
-	public function errors() {
+	public function errors(): array {
 		return $this->errors;
 	}
 

@@ -1,6 +1,9 @@
 <?php
 namespace AvelPress\Database\Migrations;
 
+use AvelPress\Database\Database;
+use AvelPress\Database\Schema\Blueprint;
+use AvelPress\Database\Schema\Schema;
 use AvelPress\Foundation\Application;
 
 defined( 'ABSPATH' ) || exit;
@@ -21,10 +24,38 @@ class Migrator {
 	 */
 	protected $app;
 
+
+	protected $tableName;
+
 	public function __construct( Application $app ) {
 		$this->app = $app;
 		$this->prefix = $app->getIdAsUnderscore();
 		$this->path = $app->getBasePath();
+		$this->tableName = "{$this->prefix}_migrations";
+	}
+
+	public function maybeCreateMigrationsTable() {
+		if ( Database::tableExists( $this->tableName ) ) {
+			return;
+		}
+
+		Schema::create( $this->tableName, function (Blueprint $table) {
+			$table->id( 'id' );
+			$table->string( 'name' );
+			$table->string( 'file' );
+			$table->timestamps();
+		} );
+	}
+
+	public function processMigrationFile( string $file ) {
+		$migration = require $file;
+
+		if ( method_exists( $migration, 'up' ) ) {
+			$migration->up();
+			return true;
+		}
+
+		return false;
 	}
 
 	public function run() {
@@ -43,23 +74,57 @@ class Migrator {
 			return;
 		}
 
-		$option_key = "_{$this->prefix}_migrations";
-		$applied = get_option( $option_key, [] );
+		$this->maybeCreateMigrationsTable();
+
+		$model = Database::table( $this->tableName );
+
+		$migrations = $model->select( 'name' )->get()->pluck( 'name' )->toArray();
+		$applied = [];
 
 		foreach ( $files as $file ) {
-			$migration = require_once $file;
-
 			$migration_id = basename( $file, '.php' );
 
-			if ( in_array( $migration_id, $applied, true ) ) {
+			if ( in_array( $migration_id, $migrations, true ) ) {
 				continue;
 			}
 
-			if ( method_exists( $migration, 'up' ) ) {
-				$migration->up();
+			$migrated = $this->processMigrationFile( $file );
+
+			if ( $migrated ) {
+				$migrations[] = $migration_id;
 				$applied[] = $migration_id;
-				update_option( $option_key, $applied );
+
+				Database::insert( Database::getTableName( $this->tableName ), [ 
+					'name' => $migration_id,
+					'file' => $file,
+					'created_at' => current_time( 'mysql' ),
+					'updated_at' => current_time( 'mysql' ),
+				] );
 			}
 		}
+
+		return $applied;
+	}
+
+	public function fresh() {
+		$model = Database::table( $this->tableName );
+
+		$migrations = $model->get();
+
+		if ( ! $migrations->isEmpty() ) {
+			foreach ( $migrations as $mg ) {
+				if ( file_exists( $mg->file ) ) {
+					$migration = require_once $mg->file;
+
+					if ( method_exists( $migration, 'down' ) ) {
+						$migration->down();
+						$success[] = $mg->name;
+						$model->where( [ 'id' => $mg->id ] )->delete();
+					}
+				}
+			}
+		}
+
+		return $this->run();
 	}
 }

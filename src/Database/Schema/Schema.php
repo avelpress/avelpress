@@ -14,7 +14,7 @@ class Schema {
 
 	public static function drop( string $table ) {
 		global $wpdb;
-		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %s', $table ) );
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}$table" );
 	}
 
 	public static function table( string $table, callable $callback ) {
