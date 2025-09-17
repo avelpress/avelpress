@@ -112,6 +112,39 @@ class Collection implements \ArrayAccess, \IteratorAggregate {
 		return new self( $items );
 	}
 
+
+	/**
+	 * Merge the collection with the given items.
+	 *
+	 * @param  Collection|array $collection
+	 * 
+	 * @return Collection
+	 */
+	public function merge( $collection ) {
+		if ( $collection instanceof self ) {
+			$this->items = array_merge( $this->items, $collection->all() );
+		} elseif ( is_array( $collection ) ) {
+			$this->items = array_merge( $this->items, $collection );
+		}
+		return $this;
+	}
+
+	public function unique( $key ) {
+		$uniqueItems = [];
+		$seenKeys = [];
+
+		foreach ( $this->items as $item ) {
+			$itemKey = $this->data_get( $item, $key );
+
+			if ( ! in_array( $itemKey, $seenKeys, true ) ) {
+				$seenKeys[] = $itemKey;
+				$uniqueItems[] = $item;
+			}
+		}
+
+		return new self( $uniqueItems );
+	}
+
 	/**
 	 * Get the sum of a given key.
 	 *
@@ -264,7 +297,6 @@ class Collection implements \ArrayAccess, \IteratorAggregate {
 	public function offsetUnset( $key ): void {
 		unset( $this->items[ $key ] );
 	}
-
 
 	/**
 	 * Get an iterator for the items.
