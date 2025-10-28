@@ -25,9 +25,18 @@ class AdminServiceProvider extends ServiceProvider {
 	public function boot() {
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 		add_action( 'admin_init', [ $this, 'admin_setup' ] );
+		add_action( 'init', [ $this, 'init' ] );
 
 		$this->app->make( WooCommerce::class)->init();
 		$this->app->make( 'admin.manager' )->init();
+	}
+
+	public function init(): void {
+		load_plugin_textdomain(
+			$this->app->getId(),
+			false,
+			$this->app->pluginRoot() . '/languages'
+		);
 	}
 
 	public function admin_setup(): void {

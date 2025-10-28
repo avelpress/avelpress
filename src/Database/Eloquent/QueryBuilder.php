@@ -180,7 +180,7 @@ class QueryBuilder {
 			return $this;
 		}
 
-		$where = [ 
+		$where = [
 			'column' => $column,
 			'value' => $value ?? $operator,
 			'operator' => isset( $value ) ? $operator : '='
@@ -230,7 +230,7 @@ class QueryBuilder {
 
 		$sql = $query->generateQuery();
 
-		$this->existsArray[] = [ 
+		$this->existsArray[] = [
 			'sql' => $sql,
 			'method' => 'AND'
 		];
@@ -313,14 +313,14 @@ class QueryBuilder {
 				$related_class = $hasOne->getRelatedClass();
 				$table_name = $related_class::getFullTableName();
 
-				$this->joinArray[] = [ 
+				$this->joinArray[] = [
 					'table' => $table_name,
 					'foreign_key' => $this->model->getForeignKey() . '_id',
 					'local_key' => 'id',
 				];
 
 				//TODO: Replace by $this->where
-				$this->whereArray[] = [ 
+				$this->whereArray[] = [
 					'method' => $query_method,
 					'column' => "{$column}",
 					'table' => $table_name,
@@ -329,7 +329,7 @@ class QueryBuilder {
 				];
 
 				if ( $related_class::isTrashed() ) {
-					$this->whereArray[] = [ 
+					$this->whereArray[] = [
 						'column' => 'deleted_at',
 						'table' => $table_name,
 						'value' => '!#####NULL#####!',
@@ -347,14 +347,14 @@ class QueryBuilder {
 				$table_name = $related_class::getFullTableName();
 
 
-				$this->joinArray[] = [ 
+				$this->joinArray[] = [
 					'table' => $table_name,
 					'foreign_key' => $belongsTo->getLocalKey(),
 					'local_key' => $belongsTo->getForeignKey()
 				];
 
 				//TODO: Replace by $this->where
-				$this->whereArray[] = [ 
+				$this->whereArray[] = [
 					'method' => $query_method,
 					'column' => "{$column}",
 					'table' => $table_name,
@@ -363,7 +363,7 @@ class QueryBuilder {
 				];
 
 				if ( $related_class::isTrashed() ) {
-					$this->whereArray[] = [ 
+					$this->whereArray[] = [
 						'column' => 'deleted_at',
 						'table' => $table_name,
 						'value' => '!#####NULL#####!',
@@ -390,7 +390,7 @@ class QueryBuilder {
 	 * @return static
 	 */
 	public function whereColumn( $column_one, $operator = null, $column_two = null, $method = 'AND' ) {
-		$this->whereColumnArray[] = [ 
+		$this->whereColumnArray[] = [
 			'column_one' => $column_one,
 			'operator' => $column_two ? $operator : '=',
 			'column_two' => $column_two ?? $operator,
@@ -481,7 +481,7 @@ class QueryBuilder {
 	 * @return array|null
 	 */
 	private function buildRelationConfig( $relationTypeName, $relatedClass, $relation ) {
-		$baseConfig = [ 
+		$baseConfig = [
 			'model' => $relatedClass,
 			'relation' => $relation,
 			'table' => $relatedClass::getTable(),
@@ -489,21 +489,21 @@ class QueryBuilder {
 
 		switch ( $relationTypeName ) {
 			case HasOne::class:
-				return array_merge( $baseConfig, [ 
+				return array_merge( $baseConfig, [
 					'foreign_key' => $this->model->getForeignKey() . '_id',
 					'local_key' => 'id',
 					'relation_type' => HasOne::class
 				] );
 
 			case BelongsTo::class:
-				return array_merge( $baseConfig, [ 
+				return array_merge( $baseConfig, [
 					'foreign_key' => 'id',
 					'local_key' => $relatedClass::getForeignKeyStatic(),
 					'relation_type' => BelongsTo::class
 				] );
 
 			case HasMany::class:
-				return array_merge( $baseConfig, [ 
+				return array_merge( $baseConfig, [
 					'foreign_key' => $this->model->getForeignKey() . '_id',
 					'local_key' => 'id',
 					'relation_type' => HasMany::class
@@ -840,16 +840,16 @@ class QueryBuilder {
 	 * 
 	 * @return Paginator
 	 */
-	public function paginate( $per_page ) {
-		$current_page = (int) ( $_GET['p'] ?? 1 );
+	public function paginate( $per_page, $columns = [], $query_page_key = 'page' ) {
+		$current_page = (int) ( $_GET[ $query_page_key ] ?? 1 );
 		$total = $this->count();
 		$items = $this->offset( ( $current_page - 1 ) * $per_page )
 			->limit( $per_page )
 			->get();
 
-		return new Paginator( $items->all(), $total, $per_page, $current_page, [ 
+		return new Paginator( $items->all(), $total, $per_page, $current_page, [
 			'path' => '/quotes',
-			'pageName' => 'p',
+			'pageName' => $query_page_key,
 		] );
 	}
 }
