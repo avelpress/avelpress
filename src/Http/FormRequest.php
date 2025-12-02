@@ -16,4 +16,8 @@ class FormRequest extends Validator {
 	public function __construct( $request ) {
 		$this->data = $request->get_params();
 	}
+
+	public function isMethod( $method ) {
+		return strtolower( $method ) === strtolower( $_SERVER['REQUEST_METHOD'] );
+	}
 }

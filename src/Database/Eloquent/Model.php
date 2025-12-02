@@ -508,7 +508,7 @@ abstract class Model implements \ArrayAccess {
 		$result = [];
 		foreach ( $this->data as $key => $value ) {
 			if ( $value instanceof Collection ) {
-				$result[ $key ] = $value->map( function ($item) {
+				$result[ $key ] = $value->map( function ( $item ) {
 					return $item instanceof Model ? $item->toArray() : $item;
 				} );
 			} elseif ( $value instanceof Model ) {
@@ -557,6 +557,13 @@ abstract class Model implements \ArrayAccess {
 		if ( array_key_exists( $key, $casts ) ) {
 			$cast = $casts[ $key ];
 			if ( is_string( $cast ) ) {
+				switch ( $cast ) {
+					case 'boolean':
+					case 'bool':
+						$cast = \AvelPress\Database\Eloquent\Casts\BooleanCast::class;
+						break;
+				}
+
 				$cast = new $cast;
 			}
 			if ( $cast instanceof CastsAttributes ) {
@@ -589,6 +596,12 @@ abstract class Model implements \ArrayAccess {
 		if ( array_key_exists( $key, $casts ) ) {
 			$cast = $casts[ $key ];
 			if ( is_string( $cast ) ) {
+				switch ( $cast ) {
+					case 'boolean':
+					case 'bool':
+						$cast = \AvelPress\Database\Eloquent\Casts\BooleanCast::class;
+						break;
+				}
 				$cast = new $cast;
 			}
 			if ( $cast instanceof CastsAttributes ) {

@@ -16,12 +16,20 @@ class JsonResource {
 	public $resource;
 
 	/**
+	 * The options for the resource.
+	 *
+	 * @var array
+	 */
+	public $options;
+
+	/**
 	 * Create a new resource instance.
 	 *
 	 * @param  Model  $resource
 	 */
-	public function __construct( $resource ) {
+	public function __construct( $resource, $options = [] ) {
 		$this->resource = $resource;
+		$this->options = $options;
 	}
 
 
@@ -34,7 +42,7 @@ class JsonResource {
 	}
 
 	public function __get( $name ) {
-		if ( isset( $this->resource ) && $this->resource[ $name ] ) {
+		if ( isset( $this->resource ) && isset( $this->resource[ $name ] ) ) {
 			return $this->resource[ $name ];
 		}
 

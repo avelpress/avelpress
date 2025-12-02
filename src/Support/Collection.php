@@ -62,11 +62,11 @@ class Collection implements \ArrayAccess, \IteratorAggregate {
 	public function toArray() {
 		$items = [];
 
-		foreach ( $this->items as $item ) {
+		foreach ( $this->items as $key => $item ) {
 			if ( $item instanceof Model ) {
-				$items[] = $item->toArray();
+				$items[ $key ] = $item->toArray();
 			} else {
-				$items[] = $item;
+				$items[ $key ] = $item;
 			}
 		}
 
@@ -245,7 +245,7 @@ class Collection implements \ArrayAccess, \IteratorAggregate {
 	public function sortByDesc( $key ) {
 		$items = $this->items;
 
-		usort( $items, function ($a, $b) use ($key) {
+		usort( $items, function ( $a, $b ) use ( $key ) {
 			return $b->$key <=> $a->$key;
 		} );
 

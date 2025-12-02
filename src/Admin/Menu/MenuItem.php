@@ -13,6 +13,8 @@ abstract class MenuItem {
 
 	protected $view;
 
+	protected $position;
+
 	protected $scripts = [];
 
 	public function slug( $slug ) {
@@ -32,6 +34,11 @@ abstract class MenuItem {
 
 	public function icon( $icon ) {
 		$this->icon = $icon;
+		return $this;
+	}
+
+	public function position( $position ) {
+		$this->position = $position;
 		return $this;
 	}
 
@@ -60,6 +67,10 @@ abstract class MenuItem {
 		return $this->path;
 	}
 
+	public function getPosition() {
+		return $this->position;
+	}
+
 	/**
 	 * Registred scripts to be enqueued for this menu item.
 	 * 
@@ -73,7 +84,7 @@ abstract class MenuItem {
 	}
 
 	public function toArray() {
-		return [ 
+		return [
 			'slug' => $this->slug,
 			'title' => $this->title,
 			'capability' => $this->capability,

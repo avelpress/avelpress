@@ -38,7 +38,8 @@ abstract class MenuBuilder {
 				function () use ($menu) {
 					// Slince, this menu is rendered in routing, we don't need to render it here.
 				},
-				$menu->getIcon()
+				$menu->getIcon(),
+				$menu->getPosition()
 			);
 
 			foreach ( $menu->getSubmenus() as $submenu ) {
