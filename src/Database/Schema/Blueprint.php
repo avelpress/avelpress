@@ -237,7 +237,7 @@ class Blueprint {
 	 */
 	public function timestamps( $precision = null ) {
 		//change timestamp to dateTime for wordpress compatibility
-		return new Collection( [ 
+		return new Collection( [
 			$this->dateTime( 'created_at', $precision )->nullable(),
 			$this->dateTime( 'updated_at', $precision )->nullable(),
 		] );
@@ -349,7 +349,7 @@ class Blueprint {
 			return $command;
 		}
 
-		return new ForeignKeyDefinition( $this, [ 
+		return new ForeignKeyDefinition( $this, [
 			'columns' => $columns,
 			'name' => $name,
 			'blueprint' => $this,
@@ -368,7 +368,7 @@ class Blueprint {
 	 * @return ForeignIdColumnDefinition
 	 */
 	public function foreignId( $column ) {
-		return $this->addColumnDefinition( new ForeignIdColumnDefinition( $this, [ 
+		return $this->addColumnDefinition( new ForeignIdColumnDefinition( $this, [
 			'type' => 'bigInteger',
 			'name' => $column,
 			'autoIncrement' => false,
