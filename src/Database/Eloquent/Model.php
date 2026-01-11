@@ -562,6 +562,9 @@ abstract class Model implements \ArrayAccess {
 					case 'bool':
 						$cast = \AvelPress\Database\Eloquent\Casts\BooleanCast::class;
 						break;
+					case 'array':
+						$cast = \AvelPress\Database\Eloquent\Casts\ArrayCast::class;
+						break;
 				}
 
 				$cast = new $cast;
@@ -600,6 +603,9 @@ abstract class Model implements \ArrayAccess {
 					case 'boolean':
 					case 'bool':
 						$cast = \AvelPress\Database\Eloquent\Casts\BooleanCast::class;
+						break;
+					case 'array':
+						$cast = \AvelPress\Database\Eloquent\Casts\ArrayCast::class;
 						break;
 				}
 				$cast = new $cast;
