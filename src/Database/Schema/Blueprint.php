@@ -94,6 +94,9 @@ class Blueprint {
 			case 'text':
 				$sql .= ' text';
 				break;
+			case 'longText':
+				$sql .= ' longtext';
+				break;
 			default:
 				$sql .= ' text';
 		}
@@ -269,6 +272,10 @@ class Blueprint {
 
 	public function text( $column ) {
 		return $this->addColumn( 'text', $column );
+	}
+
+	public function longText( $column ) {
+		return $this->addColumn( 'longText', $column );
 	}
 
 
