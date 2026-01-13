@@ -180,6 +180,15 @@ class QueryBuilder {
 			return $this;
 		}
 
+		if ( $column instanceof \Closure ) {
+			$this->whereArray[] = [
+				'type' => 'Nested',
+				'callback' => $column,
+				'method' => $method ?? 'AND'
+			];
+			return $this;
+		}
+
 		$where = [
 			'column' => $column,
 			'value' => $value ?? $operator,
@@ -197,6 +206,28 @@ class QueryBuilder {
 		$this->whereArray[] = $where;
 
 		return $this;
+	}
+
+	/**
+	 * Add an "or where" clause to the query.
+	 * 
+	 * @since 1.0.4
+	 * 
+	 * @param mixed $column
+	 * @param mixed $operator
+	 * @param mixed $value
+	 * 
+	 * @return QueryBuilder
+	 */
+	public function orWhere( $column, $operator = null, $value = null ) {
+		if ( is_array( $column ) ) {
+			foreach ( $column as $col => $val ) {
+				$this->orWhere( $col, $val );
+			}
+			return $this;
+		}
+
+		return $this->where( $column, $operator, $value, 'OR' );
 	}
 
 	/**
@@ -632,6 +663,21 @@ class QueryBuilder {
 		$placeholders = [];
 		$values = [];
 		foreach ( $this->whereArray as $where ) {
+			if ( isset( $where['type'] ) && $where['type'] === 'Nested' ) {
+				$nestedQuery = new self( $this->model );
+				$nestedQuery->whereArray = [];
+				call_user_func( $where['callback'], $nestedQuery );
+				$nestedWhere = $nestedQuery->resolveWhere();
+
+				if ( ! empty( $nestedWhere['placeholders'] ) ) {
+					$nestedSql = '(' . implode( ' ', $nestedWhere['placeholders'] ) . ')';
+					$method = $where['method'] ?? 'AND';
+					$placeholders[] = empty( $placeholders ) ? $nestedSql : "{$method} {$nestedSql}";
+					$values = array_merge( $values, $nestedWhere['values'] );
+				}
+				continue;
+			}
+
 			$operator = $where['operator'] ?? '=';
 			$where['value'] = is_array( $where['value'] ) && empty( $where['value'] ) ? [ null ] : $where['value'];
 			$value = $where['operator'] === 'IN' ? '(' . implode( ', ', array_fill( 0, count( $where['value'] ), '%s' ) ) . ')' : '%s';
