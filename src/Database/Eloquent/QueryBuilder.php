@@ -893,9 +893,6 @@ class QueryBuilder {
 			->limit( $per_page )
 			->get();
 
-		return new Paginator( $items->all(), $total, $per_page, $current_page, [
-			'path' => '/quotes',
-			'pageName' => $query_page_key,
-		] );
+		return new Paginator( $items->all(), $total, $per_page, $current_page );
 	}
 }

@@ -10,6 +10,8 @@ abstract class MenuBuilder {
 	protected $menus = [];
 	protected $groupCallback;
 
+	protected $currentMenu;
+
 	/**
 	 * @var Application
 	 */
