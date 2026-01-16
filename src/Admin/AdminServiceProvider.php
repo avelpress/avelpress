@@ -32,11 +32,15 @@ class AdminServiceProvider extends ServiceProvider {
 	}
 
 	public function init(): void {
-		load_plugin_textdomain(
-			$this->app->getId(),
-			false,
-			$this->app->pluginRoot() . '/languages'
-		);
+		$enable_translation = $this->app->make( 'config' )->boolean( 'app.enable_translation' );
+
+		if ( $enable_translation === true ) {
+			load_plugin_textdomain(
+				$this->app->getId(),
+				false,
+				$this->app->pluginRoot() . '/languages'
+			);
+		}
 	}
 
 	public function admin_setup(): void {
