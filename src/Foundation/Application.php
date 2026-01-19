@@ -135,7 +135,7 @@ class Application {
 	}
 
 	public function addRouteFile( $path, $type = 'api' ) {
-		$this->routeFiles[] = [ 
+		$this->routeFiles[] = [
 			'type' => $type,
 			'path' => $path
 		];
@@ -172,14 +172,14 @@ class Application {
 	}
 
 	public function singleton( $abstract, $concrete = null ) {
-		$this->bindings[ $abstract ] = [ 
+		$this->bindings[ $abstract ] = [
 			'concrete' => $concrete ?: $abstract,
 			'shared' => true,
 		];
 	}
 
 	public function bind( $abstract, $concrete = null ) {
-		$this->bindings[ $abstract ] = [ 
+		$this->bindings[ $abstract ] = [
 			'concrete' => $concrete ?: $abstract,
 			'shared' => false,
 		];
@@ -239,6 +239,12 @@ class Application {
 	 */
 	public function config() {
 		return $this->make( 'config' );
+	}
+
+	public function getTranslations() {
+		$base = $this->getBasePath();
+		$path = "{$base}/resources/lang/translations.php";
+		return include $path;
 	}
 
 

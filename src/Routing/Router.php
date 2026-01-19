@@ -51,7 +51,7 @@ class Router {
 			$this->registerRestRoute( $prefix, $uri, $action, $guards, $httpMethod );
 		}
 
-		return $this->routes[] = [ 
+		return $this->routes[] = [
 			'method' => $httpMethod,
 			'uri' => $uri,
 			'action' => $action,
@@ -67,7 +67,7 @@ class Router {
 		}
 
 		add_submenu_page(
-			null,
+			"avelpress-hidden-page",
 			$this->page,
 			$this->page,
 			$firstGuard,
@@ -94,9 +94,9 @@ class Router {
 		register_rest_route(
 			$prefix,
 			$uri,
-			[ 
+			[
 				'methods' => $httpMethod,
-				'callback' => function (\WP_REST_Request $request) use ($action) {
+				'callback' => function ( \WP_REST_Request $request ) use ( $action ) {
 					try {
 						$response = $this->processRequest( $action, $request );
 						if ( $response instanceof ResourceCollection || $response instanceof JsonResource ) {
@@ -222,7 +222,7 @@ class Router {
 
 
 	public function prefix( $prefix ) {
-		$this->prefixStack[ $this->groupDepth ] = [ 
+		$this->prefixStack[ $this->groupDepth ] = [
 			'prefix' => trim( $prefix, '/' ),
 			'depth' => $this->groupDepth
 		];
@@ -240,11 +240,11 @@ class Router {
 		$callback( $this );
 
 		// Remove prefixes and guards from current depth
-		$this->prefixStack = array_filter( $this->prefixStack, function ($item) {
+		$this->prefixStack = array_filter( $this->prefixStack, function ( $item ) {
 			return $item['depth'] < $this->groupDepth;
 		} );
 
-		$this->guardStack = array_filter( $this->guardStack, function ($item) {
+		$this->guardStack = array_filter( $this->guardStack, function ( $item ) {
 			return $item['depth'] < $this->groupDepth;
 		} );
 
@@ -260,7 +260,7 @@ class Router {
 
 	public function guards( $guards ) {
 		//TODO: fix this pass others Routes
-		$this->guardStack[ $this->groupDepth ] = [ 
+		$this->guardStack[ $this->groupDepth ] = [
 			'guards' => $guards,
 			'depth' => $this->groupDepth
 		];
@@ -289,11 +289,11 @@ class Router {
 	protected function applyPrefix() {
 		if ( ! empty( $this->prefixStack ) ) {
 			// Filter prefixes that are at or below the current depth
-			$currentPrefixes = array_filter( $this->prefixStack, function ($item) {
+			$currentPrefixes = array_filter( $this->prefixStack, function ( $item ) {
 				return $item['depth'] < $this->groupDepth;
 			} );
 
-			$prefixes = array_map( function ($item) {
+			$prefixes = array_map( function ( $item ) {
 				return $item['prefix'];
 			}, $currentPrefixes );
 
@@ -307,11 +307,11 @@ class Router {
 	protected function applyGuards() {
 		if ( ! empty( $this->guardStack ) ) {
 			// Filter guards that are at or below the current depth
-			$currentGuards = array_filter( $this->guardStack, function ($item) {
+			$currentGuards = array_filter( $this->guardStack, function ( $item ) {
 				return $item['depth'] < $this->groupDepth;
 			} );
 
-			return array_map( function ($item) {
+			return array_map( function ( $item ) {
 				return $item['guards'];
 			}, $currentGuards );
 		}
