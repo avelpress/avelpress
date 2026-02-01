@@ -135,12 +135,7 @@ class QueryBuilder {
 		$this->model = $model;
 		if ( $model->trashed() ) {
 			$this->whereArray[] = [ 'column' => 'deleted_at', 'value' => '!#####NULL#####!', 'operator' => 'IS' ];
-			add_filter( 'query', [ $this, 'nulled_query_replace' ] );
 		}
-	}
-
-	public function nulled_query_replace( $query ) {
-		return str_replace( [ "IS '!#####NULL#####!'", "IS NOT '!#####NULL#####!'" ], [ 'IS NULL', 'IS NOT NULL' ], $query );
 	}
 
 	/**
@@ -159,6 +154,11 @@ class QueryBuilder {
 
 	public function find( $id ) {
 		return $this->where( $this->model->primaryKey, $id )->first();
+	}
+
+	public function whereNull( $column ) {
+		$this->where( $column, 'IS', '!#####NULL#####!' );
+		return $this;
 	}
 
 	/**
@@ -745,7 +745,7 @@ class QueryBuilder {
 
 		//TODO: optimize this
 		foreach ( $this->withArray as $with ) {
-			if ( $with['relation_type'] !== BelongsTo::class) {
+			if ( $with['relation_type'] !== BelongsTo::class && $with['relation_type'] !== HasOne::class ) {
 				foreach ( $ids as $id ) {
 					$relations[ $id ][ $with['relation'] ] = new Collection( [] );
 				}
@@ -762,6 +762,11 @@ class QueryBuilder {
 					$data = $relationResult->firstWhere( $with['foreign_key'], $item->{$with['local_key']} );
 					$foreginKey = $with['foreign_key'];
 					$relations[ $item->$foreginKey ][ $with['relation'] ] = $data;
+				}
+			} elseif ( $with['relation_type'] === HasOne::class ) {
+				foreach ( $relationResult as $item ) {
+					$foreginKey = $with['foreign_key'];
+					$relations[ $item->$foreginKey ][ $with['relation'] ] = $item;
 				}
 			} else {
 				foreach ( $relationResult as $item ) {

@@ -192,6 +192,19 @@ abstract class Model implements \ArrayAccess {
 	}
 
 	/**
+	 * Where Null
+	 *
+	 * @since 1.0.9
+	 * 
+	 * @param mixed $column Column name
+	 * 
+	 * @return QueryBuilder
+	 */
+	public static function whereNull( $column ) {
+		return self::query()->whereNull( $column );
+	}
+
+	/**
 	 * Where
 	 *
 	 * @since 1.0.0

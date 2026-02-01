@@ -18,4 +18,12 @@ class DatabaseServiceProvider extends ServiceProvider {
 			return new Migrator( $this->app );
 		} );
 	}
+
+	public function boot() {
+		add_filter( 'query', [ $this, 'nulled_query_replace' ] );
+	}
+
+	public function nulled_query_replace( $query ) {
+		return str_replace( [ "IS '!#####NULL#####!'", "IS NOT '!#####NULL#####!'" ], [ 'IS NULL', 'IS NOT NULL' ], $query );
+	}
 }
