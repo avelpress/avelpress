@@ -161,6 +161,11 @@ class QueryBuilder {
 		return $this;
 	}
 
+	public function whereNotNull( $column ) {
+		$this->where( $column, 'IS NOT', '!#####NULL#####!' );
+		return $this;
+	}
+
 	/**
 	 * Add a basic where clause to the query.
 	 * 
@@ -584,7 +589,6 @@ class QueryBuilder {
 	}
 
 	public function update( $columns_values ) {
-		$where = $this->resolveWhere();
 		$set_clauses = [];
 		$values = [];
 
@@ -594,10 +598,35 @@ class QueryBuilder {
 		}
 
 		$set_clause = implode( ', ', $set_clauses );
-		$where_clause = implode( ' ', $where['placeholders'] );
-		$values = array_merge( $values, $where['values'] );
 
-		$sql = "UPDATE {$this->table_name} SET {$set_clause} WHERE {$where_clause}";
+		$whereExistsSql = $this->resolveWhereExists();
+		$whereColumnSql = $this->resolveWhereColumn();
+		$where = $this->resolveWhere();
+		$placeholders = $where['placeholders'];
+
+		$whereSql = implode( ' ', $placeholders );
+
+		$conditions = array_filter( [ $whereExistsSql, $whereColumnSql, $whereSql ] );
+
+		$sql = "UPDATE {$this->table_name} SET {$set_clause}";
+
+		if ( ! empty( $conditions ) ) {
+			$sql .= ' WHERE ' . implode( ' AND ', $conditions );
+			$values = array_merge( $values, $where['values'] );
+		}
+
+		if ( ! empty( $this->orderBy ) ) {
+			$sql .= ' ORDER BY ';
+			$orderBy = [];
+			foreach ( $this->orderBy as $order ) {
+				$orderBy[] = "{$order['column']} " . strtoupper( $order['order'] );
+			}
+			$sql .= implode( ', ', $orderBy );
+		}
+
+		if ( $this->limit ) {
+			$sql .= " LIMIT {$this->limit}";
+		}
 
 		$prepared_query = $this->db->prepare( $sql, ...$values );
 		return $this->db->query( $prepared_query );
@@ -745,11 +774,13 @@ class QueryBuilder {
 
 		//TODO: optimize this
 		foreach ( $this->withArray as $with ) {
-			if ( $with['relation_type'] !== BelongsTo::class && $with['relation_type'] !== HasOne::class ) {
-				foreach ( $ids as $id ) {
-					$relations[ $id ][ $with['relation'] ] = new Collection( [] );
-				}
+
+			foreach ( $ids as $id ) {
+				$initial_data = $with['relation_type'] !== BelongsTo::class && $with['relation_type'] !== HasOne::class ?
+					new Collection( [] ) : null;
+				$relations[ $id ][ $with['relation'] ] = $initial_data;
 			}
+
 
 			$foreginIds = wp_list_pluck( $results, $with['local_key'] );
 
@@ -763,7 +794,7 @@ class QueryBuilder {
 					$foreginKey = $with['foreign_key'];
 					$relations[ $item->$foreginKey ][ $with['relation'] ] = $data;
 				}
-			} elseif ( $with['relation_type'] === HasOne::class ) {
+			} elseif ( $with['relation_type'] === HasOne::class) {
 				foreach ( $relationResult as $item ) {
 					$foreginKey = $with['foreign_key'];
 					$relations[ $item->$foreginKey ][ $with['relation'] ] = $item;
