@@ -432,9 +432,7 @@ abstract class Model implements \ArrayAccess {
 	 * @return HasOne
 	 */
 	public function hasOne( string $related_class ): HasOne {
-		//TODO: See has Many fix it
-		$foreignKey = $this->modelToForeign( $related_class );
-		return new HasOne( $this, $related_class, "{$foreignKey}_id", "id" );
+		return new HasOne( $this, $related_class, "{$this->foregin_key}_id", "id" );
 	}
 
 	/**
@@ -446,7 +444,6 @@ abstract class Model implements \ArrayAccess {
 	 * @return BelongsTo
 	 */
 	public function belongsTo( $related_class ): BelongsTo {
-		//TODO: See has Many fix it
 		$foreignKey = $this->modelToForeign( $related_class );
 		return new BelongsTo( $this, $related_class, "{$foreignKey}_id", "id" );
 	}

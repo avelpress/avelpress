@@ -166,6 +166,54 @@ class QueryBuilder {
 		return $this;
 	}
 
+
+	public function whereDoesntHave( $relation, $callback ) {
+		$reflection = new \ReflectionClass( $this->model );
+
+		$method = $reflection->getMethod( $relation );
+
+		/** @var Relation $relation */
+		$relation = $method->invoke( $this->model );
+		$related_class = $relation->getRelatedClass();
+
+		$query = $related_class::query();
+
+		if ( $relation instanceof HasMany ) {
+			$query->whereColumn( $relation->getForeignKey(), $this->model->getTableName() . '.' . $relation->getLocalKey() );
+		} elseif ( $relation instanceof BelongsTo ) {
+			$query->whereColumn( $relation->getLocalKey(), $this->model->getTableName() . '.' . $relation->getForeignKey() );
+		}
+
+		if ( is_callable( $callback ) ) {
+			call_user_func( $callback, $query );
+		}
+
+		$sql = $query->generateQuery();
+
+		$this->existsArray[] = [
+			'sql' => $sql,
+			'method' => 'AND',
+			'not' => true,
+		];
+
+		return $this;
+	}
+
+	public function whereRaw( $sql, $bindings = [], $boolean = 'AND' ) {
+		$this->whereArray[] = [
+			'type' => 'Raw',
+			'sql' => $sql,
+			'bindings' => $bindings,
+			'method' => $boolean
+		];
+
+		return $this;
+	}
+
+	public function orWhereRaw( $sql, $bindings = [] ) {
+		return $this->whereRaw( $sql, $bindings, 'OR' );
+	}
+
 	/**
 	 * Add a basic where clause to the query.
 	 * 
@@ -239,11 +287,11 @@ class QueryBuilder {
 	 * Where has relation
 	 * 
 	 * @param string $relation
-	 * @param callable(QueryBuilder $query) $callback
+	 * @param callable(QueryBuilder $query)|null $callback
 	 * 
 	 * @return QueryBuilder
 	 */
-	public function whereHas( $relation, $callback ) {
+	public function whereHas( $relation, $callback = null ) {
 		$reflection = new \ReflectionClass( $this->model );
 
 		$method = $reflection->getMethod( $relation );
@@ -254,7 +302,7 @@ class QueryBuilder {
 
 		$query = $related_class::query();
 
-		if ( $relation instanceof HasMany ) {
+		if ( $relation instanceof HasMany || $relation instanceof HasOne ) {
 			$query->whereColumn( $relation->getForeignKey(), $this->model->getTableName() . '.' . $relation->getLocalKey() );
 		} elseif ( $relation instanceof BelongsTo ) {
 			$query->whereColumn( $relation->getLocalKey(), $this->model->getTableName() . '.' . $relation->getForeignKey() );
@@ -647,7 +695,7 @@ class QueryBuilder {
 			$sql .= " INNER JOIN {$join['table']} ON {$this->table_name}.{$join['local_key']} = {$join['table']}.{$join['foreign_key']}";
 		}
 
-		if ( ! empty( $this->whereArray ) ) {
+		if ( ! empty( $this->whereArray ) || ! empty( $this->whereColumnArray ) ) {
 			$sql .= ' WHERE ';
 			$whereExistsSql = $this->resolveWhereExists();
 			$whereColumnSql = $this->resolveWhereColumn();
@@ -707,6 +755,16 @@ class QueryBuilder {
 				continue;
 			}
 
+			if ( isset( $where['type'] ) && $where['type'] === 'Raw' ) {
+				$sql = $where['sql'];
+				$method = $where['method'] ?? 'AND';
+				$placeholders[] = empty( $placeholders ) ? "({$sql})" : "{$method} ({$sql})";
+				if ( ! empty( $where['bindings'] ) ) {
+					$values = array_merge( $values, (array) $where['bindings'] );
+				}
+				continue;
+			}
+
 			$operator = $where['operator'] ?? '=';
 			$where['value'] = is_array( $where['value'] ) && empty( $where['value'] ) ? [ null ] : $where['value'];
 			$value = $where['operator'] === 'IN' ? '(' . implode( ', ', array_fill( 0, count( $where['value'] ), '%s' ) ) . ')' : '%s';
@@ -748,7 +806,9 @@ class QueryBuilder {
 		foreach ( $this->existsArray as $where ) {
 			$placeholder = $where['sql'];
 			$method = $where['method'] ?? 'AND';
-			$placeholders[] = empty( $placeholders ) ? "EXISTS ({$placeholder})" : "{$method} EXISTS ({$placeholder})";
+			$not = ! empty( $where['not'] );
+			$exists = ( $not ? 'NOT ' : '' ) . "EXISTS ({$placeholder})";
+			$placeholders[] = empty( $placeholders ) ? $exists : "{$method} {$exists}";
 		}
 
 		$sql = implode( ' ', $placeholders );
