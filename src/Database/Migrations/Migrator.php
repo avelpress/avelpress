@@ -27,11 +27,14 @@ class Migrator {
 
 	protected $tableName;
 
+	protected $oldVersion;
+
 	public function __construct( Application $app ) {
 		$this->app = $app;
 		$this->prefix = $app->getIdAsUnderscore();
 		$this->path = $app->getBasePath();
 		$this->tableName = "{$this->prefix}_migrations";
+		$this->oldVersion = get_option( "{$this->prefix}_version", $app->version() );
 	}
 
 	public function maybeCreateMigrationsTable() {
@@ -39,7 +42,7 @@ class Migrator {
 			return;
 		}
 
-		Schema::create( $this->tableName, function (Blueprint $table) {
+		Schema::create( $this->tableName, function ( Blueprint $table ) {
 			$table->id( 'id' );
 			$table->string( 'name' );
 			$table->string( 'file' );
@@ -48,9 +51,11 @@ class Migrator {
 	}
 
 	public function processMigrationFile( string $file ) {
+		/** @var Migration $migration */
 		$migration = require $file;
 
 		if ( method_exists( $migration, 'up' ) ) {
+			$migration->setOldVersion( $this->oldVersion );
 			$migration->up();
 			return true;
 		}
@@ -94,7 +99,7 @@ class Migrator {
 				$migrations[] = $migration_id;
 				$applied[] = $migration_id;
 
-				Database::insert( Database::getTableName( $this->tableName ), [ 
+				Database::insert( Database::getTableName( $this->tableName ), [
 					'name' => $migration_id,
 					'file' => $file,
 					'created_at' => current_time( 'mysql' ),

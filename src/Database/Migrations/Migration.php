@@ -3,6 +3,9 @@ namespace AvelPress\Database\Migrations;
 
 defined( 'ABSPATH' ) || exit;
 abstract class Migration {
+
+	protected $oldVersion;
+
 	/**
 	 * Run the migrations.
 	 */
@@ -12,4 +15,8 @@ abstract class Migration {
 	 * Reverse the migrations.
 	 */
 	abstract public function down(): void;
+
+	public function setOldVersion( $version ) {
+		$this->oldVersion = $version;
+	}
 }
