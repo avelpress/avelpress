@@ -38,7 +38,7 @@ abstract class MenuBuilder {
 				$menu->getCapability(),
 				$menu->getSlug(),
 				function () use ($menu) {
-					// Slince, this menu is rendered in routing, we don't need to render it here.
+					// Silence, this menu is rendered in routing, we don't need to render it here.
 				},
 				$menu->getIcon(),
 				$menu->getPosition()
@@ -52,7 +52,7 @@ abstract class MenuBuilder {
 					$submenu->getCapability(),
 					$submenu->getSlug(),
 					function () use ($submenu) {
-						// Slince, this submenu is rendered in routing, we don't need to render it here.
+						// Silence, this submenu is rendered in routing, we don't need to render it here.
 					}
 				);
 			}
