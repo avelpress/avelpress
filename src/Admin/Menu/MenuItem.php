@@ -47,6 +47,11 @@ abstract class MenuItem {
 		return $this;
 	}
 
+	public function view( $view ) {
+		$this->view = $view;
+		return $this;
+	}
+
 	public function getSlug() {
 		return $this->slug;
 	}
