@@ -97,6 +97,9 @@ class Blueprint {
 			case 'longText':
 				$sql .= ' longtext';
 				break;
+			case 'json':
+				$sql .= ' json';
+				break;
 			default:
 				$sql .= ' text';
 		}
@@ -278,6 +281,9 @@ class Blueprint {
 		return $this->addColumn( 'longText', $column );
 	}
 
+	public function json( $column ) {
+		return $this->addColumn( 'json', $column );
+	}
 
 	public function boolean( $column ) {
 		return $this->addColumn( 'boolean', $column );

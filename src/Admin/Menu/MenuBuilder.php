@@ -4,10 +4,12 @@ namespace AvelPress\Admin\Menu;
 
 use AvelPress\Foundation\Application;
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
-abstract class MenuBuilder {
+abstract class MenuBuilder
+{
 	protected $menus = [];
+
 	protected $groupCallback;
 
 	protected $currentMenu;
@@ -19,19 +21,40 @@ abstract class MenuBuilder {
 
 	abstract public function register();
 
-	public function __construct( Application $app ) {
+	public function __construct(Application $app)
+	{
 		$this->app = $app;
 	}
 
-	public function add( $slug, $title ) {
-		$menu = ( new Menu() )->slug( $slug )->title( $title );
+	public function add($slug, $title)
+	{
+		$menu = (new Menu())->slug($slug)->title($title);
 		$this->menus[] = $menu;
 		$this->currentMenu = $menu;
 		return $menu;
 	}
 
-	public function create() {
-		foreach ( $this->menus as $menu ) {
+	public function addSubmenu($parentSlug, $slug, $title, $position = 99)
+	{
+		$submenu = (new Submenu($parentSlug))->slug($slug)->title($title);
+
+		add_action('admin_menu', function () use ($submenu) {
+			add_submenu_page(
+				$submenu->getParentMenu(),
+				$submenu->getTitle(),
+				$submenu->getTitle(),
+				$submenu->getCapability(),
+				$submenu->getSlug(),
+				$submenu->getCallback()
+			);
+		}, $position);
+
+		return $submenu;
+	}
+
+	public function create()
+	{
+		foreach ($this->menus as $menu) {
 			add_menu_page(
 				$menu->getTitle(),
 				$menu->getTitle(),
@@ -44,7 +67,7 @@ abstract class MenuBuilder {
 				$menu->getPosition()
 			);
 
-			foreach ( $menu->getSubmenus() as $submenu ) {
+			foreach ($menu->getSubmenus() as $submenu) {
 				add_submenu_page(
 					$menu->getSlug(),
 					$submenu->getTitle(),
@@ -57,7 +80,7 @@ abstract class MenuBuilder {
 				);
 			}
 
-			remove_submenu_page( $menu->getSlug(), $menu->getSlug() );
+			remove_submenu_page($menu->getSlug(), $menu->getSlug());
 		}
 	}
 }
