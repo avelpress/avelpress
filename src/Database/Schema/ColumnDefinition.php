@@ -198,6 +198,10 @@ class ColumnDefinition {
 	 * @return mixed
 	 */
 	public function getDefault() {
+		if ( \is_bool( $this->default ) ) {
+			return $this->default ? 1 : 0;
+		}
+
 		return $this->default;
 	}
 

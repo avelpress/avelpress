@@ -567,7 +567,7 @@ abstract class Model implements \ArrayAccess {
 		if ( array_key_exists( $key, $casts ) ) {
 			$cast = $casts[ $key ];
 			if ( is_string( $cast ) ) {
-				switch ( $cast ) {
+				switch ( strtolower( $cast ) ) {
 					case 'boolean':
 					case 'bool':
 						$cast = \AvelPress\Database\Eloquent\Casts\BooleanCast::class;
@@ -575,9 +575,23 @@ abstract class Model implements \ArrayAccess {
 					case 'array':
 						$cast = \AvelPress\Database\Eloquent\Casts\ArrayCast::class;
 						break;
+					case 'money':
+						$cast = \AvelPress\Database\Eloquent\Casts\MoneyCast::class;
+						break;
+					case 'int':
+					case 'integer':
+						return (int) $value;
+					case 'real':
+					case 'float':
+					case 'double':
+						return (float) $value;
+					case 'string':
+						return $value === null ? null : (string) $value;
 				}
 
-				$cast = new $cast;
+				if ( class_exists( $cast ) ) {
+					$cast = new $cast;
+				}
 			}
 			if ( $cast instanceof CastsAttributes ) {
 				return $cast->get( $this, $key, $value, $this->data );
@@ -609,7 +623,7 @@ abstract class Model implements \ArrayAccess {
 		if ( array_key_exists( $key, $casts ) ) {
 			$cast = $casts[ $key ];
 			if ( is_string( $cast ) ) {
-				switch ( $cast ) {
+				switch ( strtolower( $cast ) ) {
 					case 'boolean':
 					case 'bool':
 						$cast = \AvelPress\Database\Eloquent\Casts\BooleanCast::class;
@@ -617,8 +631,22 @@ abstract class Model implements \ArrayAccess {
 					case 'array':
 						$cast = \AvelPress\Database\Eloquent\Casts\ArrayCast::class;
 						break;
+					case 'money':
+						$cast = \AvelPress\Database\Eloquent\Casts\MoneyCast::class;
+						break;
+					case 'int':
+					case 'integer':
+						return (int) $value;
+					case 'real':
+					case 'float':
+					case 'double':
+						return (float) $value;
+					case 'string':
+						return $value === null ? null : (string) $value;
 				}
-				$cast = new $cast;
+				if ( class_exists( $cast ) ) {
+					$cast = new $cast;
+				}
 			}
 			if ( $cast instanceof CastsAttributes ) {
 				return $cast->set( $this, $key, $value, $this->data );
