@@ -45,6 +45,8 @@ class ColumnDefinition {
 
 	protected $unique = false;
 
+	protected $index = false;
+
 	/**
 	 * The default value of the column.
 	 *
@@ -141,6 +143,16 @@ class ColumnDefinition {
 		return $this->unique;
 	}
 
+	public function index() {
+		$this->index = true;
+
+		return $this;
+	}
+
+	public function isIndex() {
+		return $this->index;
+	}
+
 	/**
 	 * Place the column after another column.
 	 *
@@ -190,13 +202,14 @@ class ColumnDefinition {
 	}
 
 	public function getAttributes() {
-		return [ 
+		return [
 			'type' => $this->getType(),
 			'name' => $this->getName(),
 			'nullable' => $this->isNullable(),
 			'autoIncrement' => $this->isAutoIncrement(),
 			'unsigned' => $this->isUnsigned(),
 			'primary' => $this->isPrimary(),
+			'index' => $this->isIndex(),
 			'after' => $this->getAfter(),
 		];
 	}

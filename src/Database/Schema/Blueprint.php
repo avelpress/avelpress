@@ -125,6 +125,7 @@ class Blueprint {
 		$columnsSql = [];
 		$primaryKey = [];
 		$uniqueKeys = [];
+		$indexKeys = [];
 		foreach ( $this->columns as $column ) {
 			$columnsSql[] = $this->generateSingleColumnSql( $column );
 
@@ -135,11 +136,21 @@ class Blueprint {
 			if ( $column->isUnique() ) {
 				$uniqueKeys[] = $column->getName();
 			}
+
+			if ( $column->isIndex() && ! $column->isUnique() && ! $column->isPrimary() ) {
+				$indexKeys[] = $column->getName();
+			}
 		}
 
 		if ( ! empty( $uniqueKeys ) ) {
 			foreach ( $uniqueKeys as $uniqueKey ) {
 				$columnsSql[] = "UNIQUE KEY (`$uniqueKey`)";
+			}
+		}
+
+		if ( ! empty( $indexKeys ) ) {
+			foreach ( $indexKeys as $indexKey ) {
+				$columnsSql[] = "KEY (`$indexKey`)";
 			}
 		}
 
@@ -230,6 +241,18 @@ class Blueprint {
 	 */
 	public function unsignedBigInteger( $column, $autoIncrement = false ) {
 		return $this->bigInteger( $column, $autoIncrement, true );
+	}
+
+	/**
+	 * Create a new unsigned integer (4-byte) column on the table.
+	 *
+	 * @param  string  $column
+	 * @param  bool  $autoIncrement
+	 *
+	 * @return ColumnDefinition
+	 */
+	public function unsignedInteger( $column, $autoIncrement = false ) {
+		return $this->integer( $column, $autoIncrement, true );
 	}
 
 	/**
