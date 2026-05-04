@@ -628,11 +628,25 @@ class QueryBuilder {
 		if ( $this->model->trashed() ) {
 			return $this->update( [ 'deleted_at' => current_time( 'mysql' ) ] );
 		} else {
-			$where = [];
-			foreach ( $this->whereArray as $item ) {
-				$where[ $item['column'] ] = $item['value'];
+			$whereExistsSql = $this->resolveWhereExists();
+			$whereColumnSql = $this->resolveWhereColumn();
+			$where = $this->resolveWhere();
+			$placeholders = $where['placeholders'];
+			$values = $where['values'];
+
+			$whereSql = implode( ' ', $placeholders );
+
+			$conditions = array_filter( [ $whereExistsSql, $whereColumnSql, $whereSql ] );
+
+			$sql = "DELETE FROM {$this->table_name}";
+
+			if ( ! empty( $conditions ) ) {
+				$sql .= ' WHERE ' . implode( ' AND ', $conditions );
+				$prepared_query = $this->db->prepare( $sql, ...$values );
+				return $this->db->query( $prepared_query );
 			}
-			return $this->db->delete( $this->table_name, $where, $where_format );
+
+			return 0;
 		}
 	}
 
