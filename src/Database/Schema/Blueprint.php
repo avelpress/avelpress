@@ -185,6 +185,40 @@ class Blueprint {
 		return $exists !== null;
 	}
 
+	private function indexExists( $tableName, $indexName ) {
+		global $wpdb;
+
+		$exists = $wpdb->get_var( $wpdb->prepare( "SHOW INDEX FROM `{$tableName}` WHERE Key_name = %s", $indexName ) );
+
+		return $exists !== null;
+	}
+
+	private function runAlterCommands( $tableName ) {
+		global $wpdb;
+
+		foreach ( $this->commands as $command ) {
+			if ( ! is_array( $command ) || empty( $command[0] ) ) {
+				continue;
+			}
+
+			if ( 'dropColumn' === $command[0] && ! empty( $command[1] ) ) {
+				$columnName = (string) $command[1];
+
+				if ( $this->columnExists( $tableName, $columnName ) ) {
+					$wpdb->query( "ALTER TABLE `$tableName` DROP COLUMN `$columnName`;" );
+				}
+			}
+
+			if ( 'dropUnique' === $command[0] && ! empty( $command[1] ) ) {
+				$indexName = (string) $command[1];
+
+				if ( $this->indexExists( $tableName, $indexName ) ) {
+					$wpdb->query( "ALTER TABLE `$tableName` DROP INDEX `$indexName`;" );
+				}
+			}
+		}
+	}
+
 	public function run() {
 		global $wpdb;
 		if ( $this->command === 'create' ) {
@@ -205,6 +239,8 @@ class Blueprint {
 			$wpdb->query( $sql );
 		} else {
 			$tableName = $wpdb->prefix . $this->table;
+
+			$this->runAlterCommands( $tableName );
 
 			foreach ( $this->columns as $column ) {
 				$columnName = $column->getName();
@@ -439,6 +475,11 @@ class Blueprint {
 
 	public function dropColumn( $column ) {
 		$this->commands[] = [ 'dropColumn', $column ];
+		return $this;
+	}
+
+	public function dropUnique( $index ) {
+		$this->commands[] = [ 'dropUnique', $index ];
 		return $this;
 	}
 }
