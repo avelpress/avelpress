@@ -257,10 +257,13 @@ class Blueprint {
 
 			$columnsDef = implode( ",\n  ", $columnsSql );
 
-			$sql = "CREATE TABLE `$tableName` (\n  $columnsDef\n) {$wpdb->get_charset_collate()};";
+			// Pin the engine instead of inheriting the server default: foreign keys are silently
+			// ignored by MyISAM, and a table created on a MyISAM-defaulting host can never be
+			// referenced by one, which fails the child's CREATE with errno 150.
+			$sql = "CREATE TABLE `$tableName` (\n  $columnsDef\n) ENGINE=InnoDB {$wpdb->get_charset_collate()};";
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
-			$wpdb->query( $sql );
+			$this->query( $sql, $tableName );
 		} else {
 			$tableName = $wpdb->prefix . $this->table;
 
@@ -274,11 +277,36 @@ class Blueprint {
 
 					$afterColumn = $column->getAfter();
 					$sql = "ALTER TABLE `$tableName` ADD $columnSql" . ( $afterColumn ? " AFTER `$afterColumn`" : "" ) . ";";
-					$wpdb->query( $sql );
+					$this->query( $sql, $tableName );
 				}
 			}
 
 			$this->runIndexCommands( $tableName );
+		}
+	}
+
+	/**
+	 * Run a schema statement, raising the database error instead of swallowing it.
+	 *
+	 * $wpdb->query() reports failure by returning false, so an unchecked call lets a CREATE or
+	 * ALTER fail in complete silence. The migrator would then record the migration as applied
+	 * and never retry it, leaving the install permanently missing the table or column while
+	 * every write to it quietly does nothing.
+	 *
+	 * @param string $sql
+	 * @param string $tableName
+	 * @return void
+	 *
+	 * @throws \RuntimeException When the statement fails.
+	 */
+	private function query( $sql, $tableName ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		if ( false === $wpdb->query( $sql ) ) {
+			throw new \RuntimeException(
+				sprintf( 'Schema statement failed for table %s: %s', $tableName, $wpdb->last_error )
+			);
 		}
 	}
 
