@@ -1,5 +1,13 @@
 # Release Notes
 
+## [1.3.0] - 2026-09-02
+
+### Added
+
+- Plugin updater: declare `updater` in `AvelPress::init()` and the plugin appears
+  on the WordPress update screen, with the transient and plugins_api objects core
+  expects, a cached lookup and support for an endpoint that requires a licence
+
 ## [1.0.3] - 2025-12-02
 
 ### Added

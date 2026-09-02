@@ -257,9 +257,6 @@ class Blueprint {
 
 			$columnsDef = implode( ",\n  ", $columnsSql );
 
-			// Pin the engine instead of inheriting the server default: foreign keys are silently
-			// ignored by MyISAM, and a table created on a MyISAM-defaulting host can never be
-			// referenced by one, which fails the child's CREATE with errno 150.
 			$sql = "CREATE TABLE `$tableName` (\n  $columnsDef\n) ENGINE=InnoDB {$wpdb->get_charset_collate()};";
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
@@ -287,11 +284,6 @@ class Blueprint {
 
 	/**
 	 * Run a schema statement, raising the database error instead of swallowing it.
-	 *
-	 * $wpdb->query() reports failure by returning false, so an unchecked call lets a CREATE or
-	 * ALTER fail in complete silence. The migrator would then record the migration as applied
-	 * and never retry it, leaving the install permanently missing the table or column while
-	 * every write to it quietly does nothing.
 	 *
 	 * @param string $sql
 	 * @param string $tableName

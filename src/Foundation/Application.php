@@ -29,8 +29,11 @@ class Application {
 
 	protected $pluginRoot;
 
+	protected $config = [];
+
 	public function __construct( $id, $config = [] ) {
 		$this->id = $id;
+		$this->config = $config;
 		$this->snake_id = Str::toSnake( $id );
 
 		if ( isset( $config['base_path'] ) ) {
@@ -132,6 +135,50 @@ class Application {
 			}
 		}
 
+		$this->bootUpdater();
+	}
+
+	/**
+	 * Hooks the plugin into the WordPress update screen, when configured.
+	 *
+	 * Everything the updater needs is already known here: the plugin file is
+	 * {plugin_root}/{id}.php, and the version comes from its header. A plugin
+	 * only declares where to ask, and how to authenticate if the endpoint
+	 * requires it.
+	 *
+	 * @since 1.3.0
+	 */
+	protected function bootUpdater() {
+		if ( empty( $this->config['updater'] ) ) {
+			return;
+		}
+
+		$file = $this->getPluginFile();
+
+		if ( ! file_exists( $file ) ) {
+			return;
+		}
+
+		$updater = $this->config['updater'];
+
+		if ( $updater instanceof \AvelPress\Update\Contracts\UpdateProvider ) {
+			$provider = $updater;
+		} elseif ( is_array( $updater ) && ! empty( $updater['endpoint'] ) ) {
+			$provider = new \AvelPress\Update\HttpUpdateProvider( $updater['endpoint'], $updater );
+		} else {
+			return;
+		}
+
+		$header = get_file_data( $file, [ 'Version' => 'Version' ] );
+
+		$plugin_updater = new \AvelPress\Update\PluginUpdater(
+			$provider,
+			plugin_basename( $file ),
+			$this->id,
+			isset( $header['Version'] ) ? $header['Version'] : ''
+		);
+
+		$plugin_updater->register();
 	}
 
 	public function addRouteFile( $path, $type = 'api' ) {
