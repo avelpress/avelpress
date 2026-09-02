@@ -1,5 +1,12 @@
 # Release Notes
 
+## [1.3.1] - 2026-09-02
+
+### Fixed
+
+- Update provider: send the plugin slug on the unauthenticated GET, without which
+  the endpoint had no way to know which plugin was being asked about
+
 ## [1.3.0] - 2026-09-02
 
 ### Added

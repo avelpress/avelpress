@@ -79,7 +79,9 @@ class HttpUpdateProvider implements UpdateProvider {
 
 			$response = wp_remote_post( $url, $args );
 		} else {
-			$response = wp_remote_get( $url, $args );
+			// Sem corpo, o slug precisa ir na query — senão o endpoint recebe um
+			// pedido que não diz de qual plugin se trata.
+			$response = wp_remote_get( add_query_arg( 'plugin_slug', $slug, $url ), $args );
 		}
 
 		if ( is_wp_error( $response ) ) {
