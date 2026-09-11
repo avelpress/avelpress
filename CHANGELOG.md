@@ -1,5 +1,12 @@
 # Release Notes
 
+## [1.3.2] - 2026-09-11
+
+### Fixed
+
+- Plugin updater: a plugin no longer shows an update to the version it has just
+  installed
+
 ## [1.3.1] - 2026-09-02
 
 ### Fixed

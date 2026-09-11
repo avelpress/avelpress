@@ -106,7 +106,15 @@ class PluginUpdater {
 			}
 		}
 
-		$hasUpdate = version_compare( $this->version, $remote['new_version'], '<' );
+		// Compare with the version core has just read from disk, not the one this
+		// object was built with. When an update finishes, core checks again in
+		// the same request, while the old code is still loaded — and the version
+		// it remembers would offer the release that was just installed.
+		$installed = ! empty( $transient->checked[ $this->basename ] )
+			? $transient->checked[ $this->basename ]
+			: $this->version;
+
+		$hasUpdate = version_compare( $installed, $remote['new_version'], '<' );
 		$target = $hasUpdate ? 'response' : 'no_update';
 		$other = $hasUpdate ? 'no_update' : 'response';
 
