@@ -1,5 +1,15 @@
 # Release Notes
 
+## [Unreleased]
+
+### Changed
+
+- Plugin updater: moved to the `avelpress/updater` package, so plugins published
+  on wordpress.org no longer ship it; plugins that use `updater` must now
+  `composer require avelpress/updater` (same namespace and config)
+- Plugin updater: a plugin that declares `updater` without the package keeps
+  running, without updates, and administrators see a notice saying why
+
 ## [1.3.2] - 2026-09-11
 
 ### Fixed
@@ -19,8 +29,8 @@
 ### Added
 
 - Plugin updater: declare `updater` in `AvelPress::init()` and the plugin appears
-  on the WordPress update screen, with the transient and plugins_api objects core
-  expects, a cached lookup and support for an endpoint that requires a licence
+  on the WordPress update screen, with the update objects core expects, a cached
+  lookup and support for an endpoint that requires a licence
 
 ## [1.0.3] - 2025-12-02
 

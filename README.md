@@ -86,6 +86,31 @@ acme-my-awesome-plugin/
 └── vendor/                    # Composer dependencies
 ```
 
+## 🔄 Plugin Updates Outside wordpress.org
+
+A plugin sold or given away from your own store can appear on the WordPress
+update screen. That code lives in a separate package, so plugins published on
+wordpress.org (which delivers updates itself and rejects plugins that change
+the update source) never ship it:
+
+```bash
+composer require avelpress/updater
+```
+
+```php
+AvelPress::init( 'my-plugin', [
+    'base_path' => __DIR__ . '/src',
+    'updater'   => [
+        'endpoint' => 'https://store.example.com/wp-json/v1/plugin/update',
+    ],
+] );
+```
+
+See [avelpress/updater](https://github.com/avelpress/updater) for licence
+authentication and the endpoint contract. Declaring `updater` without the
+package does not break the plugin: it gets no updates, and administrators see a
+notice saying the package is missing.
+
 ## 🛠️ CLI Commands
 
 AvelPress includes a powerful CLI for rapid development:

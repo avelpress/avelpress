@@ -139,46 +139,51 @@ class Application {
 	}
 
 	/**
-	 * Hooks the plugin into the WordPress update screen, when configured.
+	 * Hands the `updater` config to the avelpress/updater package.
 	 *
-	 * Everything the updater needs is already known here: the plugin file is
-	 * {plugin_root}/{id}.php, and the version comes from its header. A plugin
-	 * only declares where to ask, and how to authenticate if the endpoint
-	 * requires it.
+	 * The updater is a separate package, so plugins published on wordpress.org do
+	 * not ship code that changes where updates come from. A plugin that declares
+	 * `updater` without requiring the package keeps working, without updates,
+	 * and administrators are told why.
 	 *
 	 * @since 1.3.0
+	 * @since 1.4.0 Delegates to avelpress/updater.
 	 */
 	protected function bootUpdater() {
 		if ( empty( $this->config['updater'] ) ) {
 			return;
 		}
 
-		$file = $this->getPluginFile();
-
-		if ( ! file_exists( $file ) ) {
+		if ( ! class_exists( \AvelPress\Update\UpdaterBootstrapper::class ) ) {
+			$this->warnUpdaterMissing();
 			return;
 		}
 
-		$updater = $this->config['updater'];
+		\AvelPress\Update\UpdaterBootstrapper::boot( $this, $this->config['updater'] );
+	}
 
-		if ( $updater instanceof \AvelPress\Update\Contracts\UpdateProvider ) {
-			$provider = $updater;
-		} elseif ( is_array( $updater ) && ! empty( $updater['endpoint'] ) ) {
-			$provider = new \AvelPress\Update\HttpUpdateProvider( $updater['endpoint'], $updater );
-		} else {
-			return;
-		}
-
-		$header = get_file_data( $file, [ 'Version' => 'Version' ] );
-
-		$plugin_updater = new \AvelPress\Update\PluginUpdater(
-			$provider,
-			plugin_basename( $file ),
-			$this->id,
-			isset( $header['Version'] ) ? $header['Version'] : ''
+	/**
+	 * Reports an `updater` config that has no package to run it.
+	 *
+	 * @since 1.4.0
+	 */
+	protected function warnUpdaterMissing() {
+		$message = sprintf(
+			'%s configures automatic updates, but the avelpress/updater package is not installed, so new versions will not be offered. Run "composer require avelpress/updater" and rebuild the plugin.',
+			$this->id
 		);
 
-		$plugin_updater->register();
+		if ( function_exists( '_doing_it_wrong' ) ) {
+			_doing_it_wrong( __METHOD__, esc_html( $message ), '1.4.0' );
+		}
+
+		add_action( 'admin_notices', function () use ( $message ) {
+			if ( ! current_user_can( 'update_plugins' ) ) {
+				return;
+			}
+
+			printf( '<div class="notice notice-warning"><p>%s</p></div>', esc_html( $message ) );
+		} );
 	}
 
 	public function addRouteFile( $path, $type = 'api' ) {
