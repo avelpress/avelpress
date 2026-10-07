@@ -111,6 +111,13 @@ authentication and the endpoint contract. Declaring `updater` without the
 package does not break the plugin: it gets no updates, and administrators see a
 notice saying the package is missing.
 
+Upgrading from AvelPress 1.3: up to 1.3.2 these classes came with the
+framework. From 2.0 on they come only from `avelpress/updater`, so require it
+in the same change that moves the plugin to `avelpress/avelpress` 2.0. Code
+that creates `AvelPress\Update\PluginUpdater` or `HttpUpdateProvider` itself,
+instead of using the `updater` config, gets a "Class not found" fatal error
+without the package; the notice above only covers the config.
+
 ## 🛠️ CLI Commands
 
 AvelPress includes a powerful CLI for rapid development:

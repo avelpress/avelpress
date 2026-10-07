@@ -4,6 +4,9 @@
     "type": "library",
     "license": "MIT",
     "minimum-stability": "stable",
+    "suggest": {
+        "avelpress/updater": "Offers updates on the WordPress update screen for plugins distributed outside wordpress.org (the 'updater' key of AvelPress::init()); never for plugins published on wordpress.org"
+    },
     "autoload": {
         "psr-4": {
             "AvelPress\\": "src/"

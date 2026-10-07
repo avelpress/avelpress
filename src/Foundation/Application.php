@@ -147,7 +147,7 @@ class Application {
 	 * and administrators are told why.
 	 *
 	 * @since 1.3.0
-	 * @since 1.4.0 Delegates to avelpress/updater.
+	 * @since 2.0.0 Delegates to avelpress/updater.
 	 */
 	protected function bootUpdater() {
 		if ( empty( $this->config['updater'] ) ) {
@@ -165,7 +165,7 @@ class Application {
 	/**
 	 * Reports an `updater` config that has no package to run it.
 	 *
-	 * @since 1.4.0
+	 * @since 2.0.0
 	 */
 	protected function warnUpdaterMissing() {
 		$message = sprintf(
@@ -174,7 +174,7 @@ class Application {
 		);
 
 		if ( function_exists( '_doing_it_wrong' ) ) {
-			_doing_it_wrong( __METHOD__, esc_html( $message ), '1.4.0' );
+			_doing_it_wrong( __METHOD__, esc_html( $message ), '2.0.0' );
 		}
 
 		add_action( 'admin_notices', function () use ( $message ) {

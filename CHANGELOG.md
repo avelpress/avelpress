@@ -2,13 +2,30 @@
 
 ## [Unreleased]
 
+This release removes public classes, so it must be tagged as a new major
+version (2.0.0), never as 1.x: plugins that require `^1.3` stay on 1.3.2, which
+still carries the updater, until they move to the package below.
+
+### Removed
+
+- **BREAKING** Plugin updater: the classes `AvelPress\Update\PluginUpdater`,
+  `AvelPress\Update\HttpUpdateProvider` and
+  `AvelPress\Update\Contracts\UpdateProvider` are no longer part of the
+  framework; they moved, unchanged and under the same namespace, to the
+  `avelpress/updater` package, so plugins published on wordpress.org no longer
+  ship them. Code that instantiates them directly (for example
+  `new \AvelPress\Update\PluginUpdater(...)` in the main plugin file) stops
+  with a "Class not found" fatal error unless the package is installed.
+  To upgrade, run `composer require avelpress/updater` in every plugin that uses
+  `updater` or those classes, together with the bump to `avelpress/avelpress`
+  2.0; plugins published on wordpress.org must not require it
+
 ### Changed
 
-- Plugin updater: moved to the `avelpress/updater` package, so plugins published
-  on wordpress.org no longer ship it; plugins that use `updater` must now
-  `composer require avelpress/updater` (same namespace and config)
-- Plugin updater: a plugin that declares `updater` without the package keeps
-  running, without updates, and administrators see a notice saying why
+- Plugin updater: a plugin that declares `updater` in `AvelPress::init()`
+  without the package keeps running, without updates, and administrators see a
+  notice saying why (only the `updater` config is covered; direct use of the
+  classes still needs the package)
 
 ## [1.3.2] - 2026-09-11
 
