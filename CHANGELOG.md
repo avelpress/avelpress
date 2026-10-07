@@ -1,10 +1,6 @@
 # Release Notes
 
-## [Unreleased]
-
-This release removes public classes, so it must be tagged as a new major
-version (2.0.0), never as 1.x: plugins that require `^1.3` stay on 1.3.2, which
-still carries the updater, until they move to the package below.
+## [2.0.0] - 2026-10-07
 
 ### Removed
 
