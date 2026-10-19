@@ -82,6 +82,7 @@ class Database {
 	public static function tableExists( $tableName ) {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- schema introspection, never cached.
 		$exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $tableName ) );
 
 		return $exists !== null;
@@ -95,6 +96,7 @@ class Database {
 	 * @return string
 	 */
 	public function prepare( $query, ...$args ) {
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- pass-through of $wpdb->prepare(): the caller's query holds the placeholders.
 		return $this->wpdb->prepare( $query, $args );
 	}
 
@@ -173,6 +175,7 @@ class Database {
 	 */
 	public static function insert( $table, $data ) {
 		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- $wpdb->insert() prepares the values; the models cache nothing.
 		$inserted = $wpdb->insert( $table, $data );
 		if ( ! $inserted ) {
 			return false;
