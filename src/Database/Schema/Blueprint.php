@@ -297,7 +297,7 @@ class Blueprint {
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		if ( false === $wpdb->query( $sql ) ) {
 			throw new \RuntimeException(
-				sprintf( 'Schema statement failed for table %s: %s', $tableName, $wpdb->last_error )
+				esc_html( sprintf( 'Schema statement failed for table %s: %s', $tableName, $wpdb->last_error ) )
 			);
 		}
 	}

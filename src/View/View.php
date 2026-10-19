@@ -20,10 +20,12 @@ class View {
 	public function make( $view, $data = [] ) {
 		$viewPath = $this->getViewPath( $view );
 		if ( file_exists( $viewPath ) ) {
-			extract( $data );
+			// Views read their data as variables, as load_template() does; EXTR_SKIP keeps $this, $view, $data and
+			// $viewPath from being replaced by a key of the same name.
+			extract( $data, EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include $viewPath;
 		} else {
-			throw new \Exception( "View not found: {$view}" );
+			throw new \Exception( esc_html( "View not found: {$view}" ) );
 		}
 	}
 

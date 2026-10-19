@@ -208,7 +208,7 @@ class Router {
 					if ( $request ) {
 						$resolved[] = $request;
 					} else {
-						throw new \Exception( "WP_REST_Request requested but no request available for parameter: {$param->getName()}" );
+						throw new \Exception( esc_html( "WP_REST_Request requested but no request available for parameter: {$param->getName()}" ) );
 					}
 				} else {
 					$resolved[] = AvelPress::app( $className );
@@ -216,7 +216,7 @@ class Router {
 			} elseif ( $param->isDefaultValueAvailable() ) {
 				$resolved[] = $param->getDefaultValue();
 			} else {
-				throw new \Exception( "Cannot resolve dependency: {$param->getName()}" );
+				throw new \Exception( esc_html( "Cannot resolve dependency: {$param->getName()}" ) );
 			}
 		}
 

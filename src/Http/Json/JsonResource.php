@@ -54,6 +54,6 @@ class JsonResource {
 			return call_user_func_array( [ $this->resource, $method ], $arguments );
 		}
 
-		throw new \BadMethodCallException( "Method {$method} does not exist on " . get_class( $this ) . " or its resource." );
+		throw new \BadMethodCallException( esc_html( "Method {$method} does not exist on " . get_class( $this ) . " or its resource." ) );
 	}
 }
