@@ -18,6 +18,8 @@ class FormRequest extends Validator {
 	}
 
 	public function isMethod( $method ) {
-		return strtolower( $method ) === strtolower( $_SERVER['REQUEST_METHOD'] );
+		$current = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '';
+
+		return strtolower( $method ) === strtolower( $current );
 	}
 }

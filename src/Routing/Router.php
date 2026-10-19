@@ -73,7 +73,10 @@ class Router {
 			$firstGuard,
 			$this->page,
 			function () use ($action, $path) {
-				if ( ! isset( $_GET['path'] ) || trim( $_GET['path'], "/" ) === trim( $path, "/" ) || $path === '*' ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only picks the admin route to render.
+				$requested = isset( $_GET['path'] ) ? sanitize_text_field( wp_unslash( $_GET['path'] ) ) : null;
+
+				if ( null === $requested || trim( $requested, "/" ) === trim( $path, "/" ) || $path === '*' ) {
 					$this->processRequest( $action, [] );
 				} else {
 					return new \WP_Error( 'not_found', 'Page not found', [ 'status' => 404 ] );

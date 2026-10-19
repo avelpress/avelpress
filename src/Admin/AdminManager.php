@@ -31,10 +31,12 @@ class AdminManager {
 	 */
 
 	public function maybeHideNotices() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only reads which admin page is open.
 		if ( ! isset( $_GET['page'] ) ) {
 			return false;
 		}
-		$current_page = $_GET['page'];
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only reads which admin page is open.
+		$current_page = sanitize_text_field( wp_unslash( $_GET['page'] ) );
 		foreach ( $this->hiddenPages as $page ) {
 			if ( $current_page === $page ) {
 				return true;
