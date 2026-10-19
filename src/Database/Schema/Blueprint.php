@@ -177,6 +177,7 @@ class Blueprint {
 	public function tableExists( $tableName ) {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- schema introspection, never cached.
 		$exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $tableName ) );
 
 		return $exists !== null;
@@ -185,6 +186,7 @@ class Blueprint {
 	private function columnExists( $tableName, $columnName ) {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- schema statement: the table, column and index names come from the migration code, not from input.
 		$exists = $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM `{$tableName}` LIKE %s", $columnName ) );
 
 		return $exists !== null;
@@ -193,6 +195,7 @@ class Blueprint {
 	private function indexExists( $tableName, $indexName ) {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- schema statement: the table, column and index names come from the migration code, not from input.
 		$exists = $wpdb->get_var( $wpdb->prepare( "SHOW INDEX FROM `{$tableName}` WHERE Key_name = %s", $indexName ) );
 
 		return $exists !== null;
@@ -210,6 +213,7 @@ class Blueprint {
 				$columnName = (string) $command[1];
 
 				if ( $this->columnExists( $tableName, $columnName ) ) {
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- schema statement: the table, column and index names come from the migration code, not from input.
 					$wpdb->query( "ALTER TABLE `$tableName` DROP COLUMN `$columnName`;" );
 				}
 			}
@@ -218,6 +222,7 @@ class Blueprint {
 				$indexName = (string) $command[1];
 
 				if ( $this->indexExists( $tableName, $indexName ) ) {
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- schema statement: the table, column and index names come from the migration code, not from input.
 					$wpdb->query( "ALTER TABLE `$tableName` DROP INDEX `$indexName`;" );
 				}
 			}
@@ -237,6 +242,7 @@ class Blueprint {
 
 				if ( ! $this->indexExists( $tableName, $indexName ) ) {
 					$keyword = 'unique' === $command[0] ? 'UNIQUE INDEX' : 'INDEX';
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- schema statement: the table, column and index names come from the migration code, not from input.
 					$wpdb->query( "ALTER TABLE `$tableName` ADD $keyword `$indexName` (" . $this->quoteIndexColumns( $command[2] ) . ");" );
 				}
 			}
@@ -294,7 +300,7 @@ class Blueprint {
 	private function query( $sql, $tableName ) {
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- schema statement built from the migration code, not from input.
 		if ( false === $wpdb->query( $sql ) ) {
 			throw new \RuntimeException(
 				esc_html( sprintf( 'Schema statement failed for table %s: %s', $tableName, $wpdb->last_error ) )

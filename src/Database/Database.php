@@ -115,6 +115,7 @@ class Database {
 	 * @return bool|int
 	 */
 	public function query( $query ) {
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- pass-through: the caller hands over a query it prepared.
 		return $this->wpdb->query( $query );
 	}
 
@@ -128,6 +129,7 @@ class Database {
 	 * @return object|null
 	 */
 	public function get_results( $query ) {
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- pass-through: the caller hands over a query it prepared.
 		return $this->wpdb->get_results( $query );
 	}
 
@@ -141,6 +143,7 @@ class Database {
 	 * @return string|null
 	 */
 	public function get_var( $query ) {
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- pass-through: the caller hands over a query it prepared.
 		return $this->wpdb->get_var( $query );
 	}
 
@@ -230,6 +233,7 @@ class Database {
 
 		$sql = "INSERT INTO $table_name ($columns_sql) VALUES $values_sql";
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- the values are placeholders; the table and column names come from the calling code, not from input.
 		return $this->wpdb->query( $this->wpdb->prepare( $sql, $values ) );
 	}
 
