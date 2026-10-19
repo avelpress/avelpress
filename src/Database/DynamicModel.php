@@ -5,6 +5,8 @@ namespace AvelPress\Database;
 use AvelPress\Database\Eloquent\Model;
 use AvelPress\Database\Eloquent\QueryBuilder;
 
+defined( 'ABSPATH' ) || exit;
+
 class DynamicModel extends Model {
 	protected $primaryKey = 'id';
 

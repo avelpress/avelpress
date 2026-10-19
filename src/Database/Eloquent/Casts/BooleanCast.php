@@ -4,6 +4,8 @@ namespace AvelPress\Database\Eloquent\Casts;
 
 use AvelPress\Contracts\Database\Eloquent\CastsAttributes;
 
+defined( 'ABSPATH' ) || exit;
+
 class BooleanCast implements CastsAttributes {
 
 	public function get( $model, string $key, $value, array $attributes ) {

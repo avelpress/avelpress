@@ -4,6 +4,8 @@ namespace AvelPress\Contracts\Database\Eloquent;
 
 use AvelPress\Database\Eloquent\Model;
 
+defined( 'ABSPATH' ) || exit;
+
 interface CastsAttributes {
 	/**
 	 * Transform the attribute from the underlying model values.
