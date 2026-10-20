@@ -998,7 +998,7 @@ class QueryBuilder {
 	 */
 	public function paginate( $per_page, $columns = [], $query_page_key = 'page' ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only reads the page number of a listing.
-		$current_page = isset( $_GET[ $query_page_key ] ) ? max( 1, absint( wp_unslash( $_GET[ $query_page_key ] ) ) ) : 1;
+		$current_page = isset( $_GET[ $query_page_key ] ) ? max( 1, intval( wp_unslash( $_GET[ $query_page_key ] ) ) ) : 1;
 		$total = $this->count();
 		$items = $this->offset( ( $current_page - 1 ) * $per_page )
 			->limit( $per_page )
