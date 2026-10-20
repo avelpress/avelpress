@@ -6,11 +6,13 @@
 
 - wordpress.org review hardening: the admin router, the notice hider,
   `FormRequest::isMethod()` and `paginate()` sanitize the superglobals they
-  read, exception messages are escaped, the last five class files exit on
-  direct access and the raw queries document why they are not prepared
-- `paginate()`: a page number below 1 is read as page 1
-- `View::make()`: a data key named `this`, `view`, `data` or `viewPath` no
-  longer replaces the method's own variables
+  read, exception messages are escaped (the migration log decodes them back
+  to plain text), the last five class files exit on direct access and the raw
+  queries document why they are not prepared
+- `paginate()`: a page number below 1 or not a number is read as page 1
+- `View::make()`: a `viewPath` data key no longer changes which file is
+  included, and a `this` key is ignored instead of throwing "Cannot re-assign
+  $this"; every other key still reaches the view as a variable
 
 ## [2.0.0] - 2026-10-07
 
