@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased]
+## [2.0.1] - 2026-10-19
 
 ### Fixed
 
