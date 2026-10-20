@@ -37,7 +37,7 @@ class AvelPress {
 		}
 
 		if ( ! file_exists( $config['plugin_root'] . "/$id.php" ) ) {
-			throw new \InvalidArgumentException( esc_html( "The plugin file for '$id' does not exist in the specified plugin root, in AvelPress::init configure plugin_root." ) );
+			throw new \InvalidArgumentException( esc_html( "The plugin file $id.php does not exist in the specified plugin root, in AvelPress::init configure plugin_root." ) );
 		}
 
 		self::$apps[ $id ] = new Application( $id, $config );

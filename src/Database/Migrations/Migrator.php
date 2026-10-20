@@ -51,7 +51,7 @@ class Migrator {
 			} );
 		} catch (\Throwable $e) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			error_log( sprintf( 'AvelPress: could not create migrations table %s: %s', $this->tableName, $e->getMessage() ) );
+			error_log( sprintf( 'AvelPress: could not create migrations table %s: %s', $this->tableName, wp_specialchars_decode( $e->getMessage(), ENT_QUOTES ) ) );
 		}
 	}
 
@@ -69,7 +69,7 @@ class Migrator {
 			$migration->up();
 		} catch (\Throwable $e) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			error_log( sprintf( 'AvelPress: migration %s failed: %s', basename( $file, '.php' ), $e->getMessage() ) );
+			error_log( sprintf( 'AvelPress: migration %s failed: %s', basename( $file, '.php' ), wp_specialchars_decode( $e->getMessage(), ENT_QUOTES ) ) );
 			return false;
 		}
 
